@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package app.seals.radio.data.api
 
 import app.seals.redio.entities.api.ApiResult
@@ -12,7 +14,7 @@ object ApiHandler {
             val response = execute()
             val body = response.body()
             if(response.isSuccessful && body != null) {
-                ApiResult.ApiSuccess(data = body as List<*>)
+                ApiResult.ApiSuccess(data = body as List<Any>)
             } else {
                 ApiResult.ApiError(code = response.code(), message = response.message())
             }

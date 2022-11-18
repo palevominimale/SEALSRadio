@@ -1,4 +1,4 @@
-package app.seals.radio.domain
+package app.seals.radio.domain.interfaces
 
 import app.seals.redio.entities.api.ApiResult
 
