@@ -26,4 +26,8 @@ class PlayerService(
     fun stop() {
         exo.pause()
     }
+
+    fun release() {
+        exo.release()
+    }
 }

@@ -82,6 +82,7 @@ class MainActivityViewModel(
 
     fun selectStation(station: StationModel) {
         _currentStation.value = station
+        player.setUrl(station.urlResolved ?: "")
         viewModelScope.launch {
             when(_pState.value) {
                 is PlayerState.IsStopped -> {
@@ -94,7 +95,6 @@ class MainActivityViewModel(
                 }
             }
         }
-        player.setUrl(station.urlResolved ?: "")
         Log.e("MAVM_", "${station.name} ${station.urlResolved} ")
     }
 

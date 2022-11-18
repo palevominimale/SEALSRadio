@@ -4,4 +4,5 @@ interface PlayerControls {
     fun play()
     fun stop()
     fun setUrl(url: String)
+    fun release()
 }

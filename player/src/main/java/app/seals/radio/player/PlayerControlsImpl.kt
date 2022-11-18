@@ -14,4 +14,8 @@ class PlayerControlsImpl : PlayerControls {
     override fun setUrl(url: String) {
         TODO("Not yet implemented")
     }
+
+    override fun release() {
+
+    }
 }
