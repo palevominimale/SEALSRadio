@@ -1,5 +1,6 @@
 package app.seals.radio.ui.bars
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -34,7 +35,7 @@ import com.google.accompanist.placeholder.shimmer
 @Preview
 fun PlayerBar(
     state: PlayerState = PlayerState.IsStopped(StationModel()),
-    onPrevious: () -> Unit = {},
+    onPrev: () -> Unit = {},
     onNext: () -> Unit = {},
     onPlay: () -> Unit = {},
     onStop: () -> Unit = {},
@@ -47,6 +48,7 @@ fun PlayerBar(
         is PlayerState.IsPlaying -> isPlaying.value = true
         is PlayerState.IsStopped -> isPlaying.value = false
     }
+    Log.e("PB_", "$state")
 
     val highlight = PlaceholderHighlight.shimmer(
         highlightColor = Color.White,
@@ -105,6 +107,7 @@ fun PlayerBar(
                     verticalArrangement = Arrangement.Center,
                     modifier = Modifier
                         .height(IntrinsicSize.Min)
+                        .widthIn(max = 220.dp)
                 ) {
                     Text(
                         text = state.station.name.toString(),
@@ -137,7 +140,7 @@ fun PlayerBar(
                     modifier = Modifier
                         .size(24.dp)
                         .clip(CircleShape)
-                        .clickable { onPrevious() }
+                        .clickable { onPrev() }
                 )
                 Icon(
                     painter = painterResource(R.drawable.ic_skip_next),
@@ -161,7 +164,6 @@ fun PlayerBar(
                             } else {
                                 onPlay()
                             }
-                            isPlaying.value = !isPlaying.value
                         }
                 )
             }

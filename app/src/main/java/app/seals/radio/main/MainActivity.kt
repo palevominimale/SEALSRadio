@@ -30,10 +30,10 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     topBar = { PlayerBar(
                         state = playerState.value,
-                        onPlay = {},
-                        onStop = {},
-                        onNext = {},
-                        onPrevious = {}
+                        onPlay = { vm.play() },
+                        onStop = { vm.stop() },
+                        onNext = { vm.next() },
+                        onPrev = { vm.prev() }
                     ) },
                     bottomBar = { SearchBar() },
                     content = {

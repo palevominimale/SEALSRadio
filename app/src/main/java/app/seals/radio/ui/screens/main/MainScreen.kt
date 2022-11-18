@@ -28,7 +28,6 @@ import com.google.accompanist.placeholder.shimmer
 import app.seals.radio.R
 import app.seals.radio.main.MainActivityViewModel
 import coil.compose.AsyncImagePainter
-import coil.request.CachePolicy
 import coil.request.ImageRequest
 
 @Composable
@@ -55,7 +54,7 @@ fun MainScreen(
 @Composable
 private fun StationItem(
     model : StationModel? = null,
-    onClick: (item: String) -> Unit,
+    onClick: (item: StationModel) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -69,7 +68,7 @@ private fun StationItem(
                 indication = null,
                 interactionSource = MutableInteractionSource()
             ) {
-                onClick(model?.stationuuid.toString())
+                onClick(model ?: StationModel())
             }
     ) {
         val highlight = PlaceholderHighlight.shimmer(

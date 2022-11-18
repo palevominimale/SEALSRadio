@@ -1,6 +1,7 @@
 package app.seals.radio.main
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.seals.radio.domain.usecases.GetTopListUseCase
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+@Suppress("UNCHECKED_CAST")
 class MainActivityViewModel(
     private val getTop: GetTopListUseCase
 ) : ViewModel() {
@@ -21,6 +23,7 @@ class MainActivityViewModel(
     private val _state = MutableStateFlow<MainUiState>(MainUiState.IsLoading)
     private val _pState = MutableStateFlow<PlayerState>(PlayerState.IsStopped(StationModel()))
     private val _apiState = MutableStateFlow<ApiResult>(ApiResult.ApiError(666, "not loaded"))
+    private val _currentStation = mutableStateOf(StationModel())
     val uiState get() = _state
     val playerState get() = _pState
 
@@ -62,7 +65,33 @@ class MainActivityViewModel(
         }
     }
 
-    fun selectStation(uuid: String) {
+    fun selectStation(station: StationModel) {
+        _currentStation.value = station
+        viewModelScope.launch {
+            when(_pState.value) {
+                is PlayerState.IsStopped -> _pState.emit(PlayerState.IsStopped(_currentStation.value))
+                is PlayerState.IsPlaying -> _pState.emit(PlayerState.IsPlaying(_currentStation.value))
+            }
+        }
+
+        Log.e("MAVM_", "$station")
+    }
+
+    fun play() {
+        viewModelScope.launch {
+            _pState.emit(PlayerState.IsPlaying(_currentStation.value))
+        }
+    }
+    fun stop() {
+        viewModelScope.launch {
+            _pState.emit(PlayerState.IsStopped(_currentStation.value))
+        }
+
+    }
+    fun next() {
+
+    }
+    fun prev() {
 
     }
 
