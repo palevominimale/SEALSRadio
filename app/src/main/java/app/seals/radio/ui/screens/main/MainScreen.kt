@@ -12,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role.Companion.Image
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,6 +29,8 @@ import com.google.accompanist.placeholder.shimmer
 import app.seals.radio.R
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
+import coil.request.ImageRequest
 
 @Composable
 @Preview
@@ -69,23 +73,31 @@ private fun StationItem(model : StationModel? = null, modifier: Modifier = Modif
         ) {
             Column {
                 var placeholderState by remember { mutableStateOf(true) }
+
                 AsyncImage(
-                    model = model?.favicon,
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(model?.favicon)
+                        .error(R.drawable.ic_radio)
+                        .crossfade(true)
+                        .build(),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     alignment = Alignment.Center,
                     modifier = Modifier
                         .padding(8.dp)
                         .size(80.dp)
-                        .clip(RoundedCornerShape(10.dp))
+                        .clip(RoundedCornerShape(16.dp))
                         .placeholder(
                             visible = placeholderState,
                             color = Color.LightGray,
-                            shape = RoundedCornerShape(20.dp),
+                            shape = RoundedCornerShape(16.dp),
                             highlight = highlight
                         ),
                     onState = {
                         if(it is AsyncImagePainter.State.Success) placeholderState = false
+                        if(it is AsyncImagePainter.State.Error) {
+                            placeholderState = false
+                        }
                     }
                 )
             }
@@ -106,6 +118,7 @@ private fun StationItem(model : StationModel? = null, modifier: Modifier = Modif
                             shape = RoundedCornerShape(20.dp),
                             highlight = highlight
                         )
+                        .padding(end = 8.dp)
                 )
                 Text(
                     text = model?.country?: stringResource(id = R.string.stations_country),
@@ -119,6 +132,7 @@ private fun StationItem(model : StationModel? = null, modifier: Modifier = Modif
                             shape = RoundedCornerShape(20.dp),
                             highlight = highlight
                         )
+                        .padding(end = 8.dp)
                 )
                 Text(
                     text = model?.codec?: stringResource(id = R.string.stations_codec),
@@ -132,6 +146,7 @@ private fun StationItem(model : StationModel? = null, modifier: Modifier = Modif
                             shape = RoundedCornerShape(20.dp),
                             highlight = highlight
                         )
+                        .padding(end = 8.dp)
                 )
             }
         }
