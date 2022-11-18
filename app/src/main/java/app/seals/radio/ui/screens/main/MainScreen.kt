@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -24,6 +25,7 @@ import com.google.accompanist.placeholder.PlaceholderDefaults
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
+import app.seals.radio.R
 
 @Composable
 @Preview
@@ -54,69 +56,82 @@ private fun StationItem(model : StationModel? = null, modifier: Modifier = Modif
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            .placeholder(
-                visible = model == null,
-                color = Color.LightGray,
-                shape = RoundedCornerShape(20.dp),
-                highlight = PlaceholderHighlight.shimmer(
-                    highlightColor = Color.White,
-                    animationSpec = PlaceholderDefaults.shimmerAnimationSpec
-                )
-            )
     ) {
-        if (model != null) {
-            Row(
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+        val highlight = PlaceholderHighlight.shimmer(
+            highlightColor = Color.White,
+            animationSpec = PlaceholderDefaults.shimmerAnimationSpec
+        )
+        Row(
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column {
+                var placeholderState by mutableStateOf(true)
+                AsyncImage(
+                    model = model?.favicon,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    alignment = Alignment.Center,
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .placeholder(
+                            visible = placeholderState,
+                            color = Color.LightGray,
+                            shape = RoundedCornerShape(20.dp),
+                            highlight = highlight
+                        ),
+                    onState = { placeholderState = false}
+                )
+            }
+            Column(
+                verticalArrangement = Arrangement.SpaceAround,
+                horizontalAlignment = Alignment.Start
             ) {
-                Column {
-                    var placeholderState by mutableStateOf(true)
-                    AsyncImage(
-                        model = model.favicon,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        alignment = Alignment.Center,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .size(80.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .placeholder(
-                                visible = placeholderState,
-                                color = Color.LightGray,
-                                shape = RoundedCornerShape(20.dp),
-                                highlight = PlaceholderHighlight.shimmer(
-                                    highlightColor = Color.White,
-                                    animationSpec = PlaceholderDefaults.shimmerAnimationSpec
-                                )
-                            ),
-                        onState = { placeholderState = false}
-                    )
-                }
-                Column(
-                    verticalArrangement = Arrangement.SpaceAround,
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text(
-                        text = model.name.toString(),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        style = Typography.labelMedium
-                    )
-                    Text(
-                        text = model.country.toString(),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        style = Typography.labelSmall
-                    )
-                    Text(
-                        text = model.codec.toString(),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        style = Typography.labelSmall
-                    )
-                }
+                val placeholderState = model == null
+                Text(
+                    text = model?.name ?: stringResource(id = R.string.stations_name),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    style = Typography.labelMedium,
+                    modifier = Modifier
+                        .placeholder(
+                            visible = placeholderState,
+                            color = Color.LightGray,
+                            shape = RoundedCornerShape(20.dp),
+                            highlight = highlight
+                        )
+                )
+                Text(
+                    text = model?.country?: stringResource(id = R.string.stations_country),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = Typography.labelSmall,
+                    modifier = Modifier
+                        .placeholder(
+                            visible = placeholderState,
+                            color = Color.LightGray,
+                            shape = RoundedCornerShape(20.dp),
+                            highlight = highlight
+                        )
+                )
+                Text(
+                    text = model?.codec?: stringResource(id = R.string.stations_codec),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = Typography.labelSmall,
+                    modifier = Modifier
+                        .placeholder(
+                            visible = placeholderState,
+                            color = Color.LightGray,
+                            shape = RoundedCornerShape(20.dp),
+                            highlight = highlight
+                        )
+                )
             }
         }
+
     }
 }
