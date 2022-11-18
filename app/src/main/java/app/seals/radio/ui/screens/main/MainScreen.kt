@@ -28,6 +28,7 @@ import com.google.accompanist.placeholder.shimmer
 import app.seals.radio.R
 import app.seals.radio.main.MainActivityViewModel
 import coil.compose.AsyncImagePainter
+import coil.request.CachePolicy
 import coil.request.ImageRequest
 
 @Composable
@@ -85,6 +86,8 @@ private fun StationItem(
 
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
+                        .memoryCachePolicy(CachePolicy.ENABLED)
+                        .diskCachePolicy(CachePolicy.ENABLED)
                         .data(model?.favicon)
                         .error(R.drawable.ic_radio)
                         .crossfade(true)

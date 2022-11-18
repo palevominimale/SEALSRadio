@@ -23,9 +23,9 @@ class MainActivityViewModel(
     private val player: PlayerService
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow<MainUiState>(MainUiState.IsLoading)
+    private val _state = MutableStateFlow<MainUiState>(MainUiState.Splash)
     private val _pState = MutableStateFlow<PlayerState>(PlayerState.IsStopped(StationModel()))
-    private val _apiState = MutableStateFlow<ApiResult>(ApiResult.ApiError(666, "not loaded"))
+    private val _apiState = MutableStateFlow<ApiResult?>(null)
     private val _currentStation = mutableStateOf(StationModel())
     val uiState get() = _state
     val playerState get() = _pState
@@ -57,6 +57,7 @@ class MainActivityViewModel(
                             }
                         }
                     }
+                    else -> uiState.emit(MainUiState.Splash)
                 }
             }
         }

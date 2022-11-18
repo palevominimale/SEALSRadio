@@ -12,6 +12,7 @@ import app.seals.radio.states.MainUiState
 import app.seals.radio.ui.bars.PlayerBar
 import app.seals.radio.ui.bars.SearchBar
 import app.seals.radio.ui.screens.main.MainScreen
+import app.seals.radio.ui.screens.splash.SplashScreen
 import app.seals.radio.ui.theme.SEALSRadioTheme
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -26,27 +27,31 @@ class MainActivity : ComponentActivity() {
             val playerState = vm.playerState.collectAsState()
 
             SEALSRadioTheme {
-                Scaffold(
-                    topBar = { PlayerBar(
-                        state = playerState.value,
-                        onIntent = { vm.playerIntent(it) }
-                    ) },
-                    bottomBar = { SearchBar() },
-                    content = {
-                        if (uiState.value is MainUiState.StationListReady) {
-                            MainScreen(
-                                list = (uiState.value as MainUiState.StationListReady).list!!,
-                                modifier = Modifier.padding(it),
-                                vm = vm
-                            )
-                        } else {
-                            MainScreen(
-                                modifier = Modifier.padding(it),
-                                vm = vm
-                            )
+                if(uiState.value is MainUiState.Splash) {
+                    SplashScreen()
+                } else {
+                    Scaffold(
+                        topBar = { PlayerBar(
+                            state = playerState.value,
+                            onIntent = { vm.playerIntent(it) }
+                        ) },
+                        bottomBar = { SearchBar() },
+                        content = {
+                            if (uiState.value is MainUiState.StationListReady) {
+                                MainScreen(
+                                    list = (uiState.value as MainUiState.StationListReady).list!!,
+                                    modifier = Modifier.padding(it),
+                                    vm = vm
+                                )
+                            } else {
+                                MainScreen(
+                                    modifier = Modifier.padding(it),
+                                    vm = vm
+                                )
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
         }
     }
