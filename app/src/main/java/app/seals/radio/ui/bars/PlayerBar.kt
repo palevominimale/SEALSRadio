@@ -1,6 +1,8 @@
 package app.seals.radio.ui.bars
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -32,6 +34,10 @@ import com.google.accompanist.placeholder.shimmer
 @Preview
 fun PlayerBar(
     state: PlayerState = PlayerState.IsStopped(StationModel()),
+    onPrevious: () -> Unit = {},
+    onNext: () -> Unit = {},
+    onPlay: () -> Unit = {},
+    onStop: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
 
@@ -130,12 +136,16 @@ fun PlayerBar(
                     contentDescription = null,
                     modifier = Modifier
                         .size(24.dp)
+                        .clip(CircleShape)
+                        .clickable { onPrevious() }
                 )
                 Icon(
                     painter = painterResource(R.drawable.ic_skip_next),
                     contentDescription = null,
                     modifier = Modifier
                         .size(24.dp)
+                        .clip(CircleShape)
+                        .clickable { onNext() }
                 )
                 Icon(
                     painter = painterResource(
@@ -144,6 +154,15 @@ fun PlayerBar(
                     contentDescription = null,
                     modifier = Modifier
                         .size(40.dp)
+                        .clip(CircleShape)
+                        .clickable {
+                            if(isPlaying.value) {
+                                onStop()
+                            } else {
+                                onPlay()
+                            }
+                            isPlaying.value = !isPlaying.value
+                        }
                 )
             }
         }

@@ -28,7 +28,13 @@ class MainActivity : ComponentActivity() {
 
             SEALSRadioTheme {
                 Scaffold(
-                    topBar = { PlayerBar(playerState.value) },
+                    topBar = { PlayerBar(
+                        state = playerState.value,
+                        onPlay = {},
+                        onStop = {},
+                        onNext = {},
+                        onPrevious = {}
+                    ) },
                     bottomBar = { SearchBar() },
                     content = {
                         if (uiState.value is MainUiState.StationListReady) {
