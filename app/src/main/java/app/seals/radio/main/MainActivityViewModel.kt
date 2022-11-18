@@ -8,6 +8,7 @@ import app.seals.radio.domain.usecases.GetTopListUseCase
 import app.seals.radio.states.MainUiState
 import app.seals.radio.entities.api.ApiResult
 import app.seals.radio.entities.responses.StationModel
+import app.seals.radio.player.PlayerService
 import app.seals.radio.states.PlayerState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +18,8 @@ import kotlinx.coroutines.launch
 
 @Suppress("UNCHECKED_CAST")
 class MainActivityViewModel(
-    private val getTop: GetTopListUseCase
+    private val getTop: GetTopListUseCase,
+    private val player: PlayerService
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<MainUiState>(MainUiState.IsLoading)
@@ -69,24 +71,31 @@ class MainActivityViewModel(
         _currentStation.value = station
         viewModelScope.launch {
             when(_pState.value) {
-                is PlayerState.IsStopped -> _pState.emit(PlayerState.IsStopped(_currentStation.value))
-                is PlayerState.IsPlaying -> _pState.emit(PlayerState.IsPlaying(_currentStation.value))
+                is PlayerState.IsStopped -> {
+                    _pState.emit(PlayerState.IsStopped(_currentStation.value))
+                    player.stop()
+                }
+                is PlayerState.IsPlaying -> {
+                    _pState.emit(PlayerState.IsPlaying(_currentStation.value))
+                    player.play()
+                }
             }
         }
-
-        Log.e("MAVM_", "$station")
+        player.setUrl(station.urlResolved ?: "")
+        Log.e("MAVM_", "${station.name} ${station.urlResolved} ")
     }
 
     fun play() {
         viewModelScope.launch {
             _pState.emit(PlayerState.IsPlaying(_currentStation.value))
         }
+        player.play()
     }
     fun stop() {
         viewModelScope.launch {
             _pState.emit(PlayerState.IsStopped(_currentStation.value))
         }
-
+        player.stop()
     }
     fun next() {
 

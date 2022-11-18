@@ -3,6 +3,7 @@ package app.seals.radio.app
 import android.app.Application
 import app.seals.radio.di.dataDi
 import app.seals.radio.di.domainDi
+import app.seals.radio.di.playerDi
 import app.seals.radio.di.uiDi
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -19,7 +20,8 @@ class App : Application() {
                 listOf(
                     uiDi,
                     domainDi,
-                    dataDi
+                    dataDi,
+                    playerDi
                 )
             )
         }
