@@ -53,8 +53,8 @@ dependencies {
     def accompanist = '0.27.0'
 
 //
-//    implementation project(':data')
-//    implementation project(':domain')
+    implementation project(':data')
+    implementation project(':domain')
     implementation project(':entities')
 
     //Google

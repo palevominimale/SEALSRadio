@@ -15,3 +15,5 @@ dependencyResolutionManagement {
 rootProject.name = "SEALS Radio"
 include ':app'
 include ':entities'
+include ':data'
+include ':domain'
