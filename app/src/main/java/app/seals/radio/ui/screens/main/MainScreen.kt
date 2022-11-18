@@ -19,7 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.seals.radio.ui.theme.Typography
-import app.seals.redio.entities.StationModel
+import app.seals.redio.entities.responses.StationModel
 import coil.compose.AsyncImage
 import com.google.accompanist.placeholder.PlaceholderDefaults
 import com.google.accompanist.placeholder.PlaceholderHighlight

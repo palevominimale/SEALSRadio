@@ -34,11 +34,18 @@ dependencies {
     def koin= '3.2.0'
 
     implementation project(':entities')
+    implementation project(':domain')
 
     //Koin
     implementation "io.insert-koin:koin-core:$koin"
     implementation "io.insert-koin:koin-androidx-workmanager:$koin"
     implementation "io.insert-koin:koin-android:$koin"
+
+
+    //Retrofit
+    implementation 'com.squareup.retrofit2:retrofit'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'

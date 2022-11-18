@@ -1,4 +1,4 @@
-package app.seals.redio.entities
+package app.seals.redio.entities.responses
 
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
