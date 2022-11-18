@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.seals.radio.R
 import app.seals.radio.entities.responses.StationModel
+import app.seals.radio.states.PlayerState
 import app.seals.radio.ui.theme.Typography
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
@@ -29,7 +30,17 @@ import com.google.accompanist.placeholder.shimmer
 
 @Composable
 @Preview
-fun PlayerBar(station: StationModel = StationModel(), modifier: Modifier = Modifier) {
+fun PlayerBar(
+    state: PlayerState = PlayerState.IsStopped(StationModel()),
+    modifier: Modifier = Modifier
+) {
+
+    val isPlaying = mutableStateOf(false)
+
+    when (state) {
+        is PlayerState.IsPlaying -> isPlaying.value = true
+        is PlayerState.IsStopped -> isPlaying.value = false
+    }
 
     val highlight = PlaceholderHighlight.shimmer(
         highlightColor = Color.White,
@@ -40,6 +51,7 @@ fun PlayerBar(station: StationModel = StationModel(), modifier: Modifier = Modif
         color = Color.White,
         shadowElevation = 5.dp,
     ) {
+
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
@@ -55,10 +67,9 @@ fun PlayerBar(station: StationModel = StationModel(), modifier: Modifier = Modif
                     verticalArrangement = Arrangement.Center
                 ) {
                     var placeholderState by remember { mutableStateOf(true) }
-
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
-                            .data(station.favicon)
+                            .data(state.station.favicon)
                             .error(R.drawable.ic_radio)
                             .crossfade(true)
                             .build(),
@@ -90,19 +101,19 @@ fun PlayerBar(station: StationModel = StationModel(), modifier: Modifier = Modif
                         .height(IntrinsicSize.Min)
                 ) {
                     Text(
-                        text = station.name.toString(),
+                        text = state.station.name.toString(),
                         style = Typography.labelMedium,
                         overflow = TextOverflow.Ellipsis,
                         maxLines = 2
                     )
                     Text(
-                        text = station.country.toString(),
+                        text = state.station.country.toString(),
                         style = Typography.labelSmall,
                         overflow = TextOverflow.Ellipsis,
                         maxLines = 1
                     )
                     Text(
-                        text = station.tags.toString(),
+                        text = state.station.tags.toString(),
                         style = Typography.labelSmall,
                         overflow = TextOverflow.Ellipsis,
                         maxLines = 2
@@ -127,7 +138,9 @@ fun PlayerBar(station: StationModel = StationModel(), modifier: Modifier = Modif
                         .size(24.dp)
                 )
                 Icon(
-                    painter = painterResource(R.drawable.ic_play),
+                    painter = painterResource(
+                        if(isPlaying.value) R.drawable.ic_stop else R.drawable.ic_play
+                    ),
                     contentDescription = null,
                     modifier = Modifier
                         .size(40.dp)

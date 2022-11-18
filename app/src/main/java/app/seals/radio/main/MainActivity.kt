@@ -6,11 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import app.seals.radio.ui.UiState
+import app.seals.radio.states.MainUiState
 import app.seals.radio.ui.bars.PlayerBar
 import app.seals.radio.ui.bars.SearchBar
 import app.seals.radio.ui.screens.main.MainScreen
@@ -24,20 +22,26 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         vm.getTop()
         setContent {
-            val state = vm.state.collectAsState()
+            val uiState = vm.uiState.collectAsState()
+            val playerState = vm.playerState.collectAsState()
+            val playerControls = {}
+
             SEALSRadioTheme {
                 Scaffold(
-                    topBar = { PlayerBar() },
+                    topBar = { PlayerBar(playerState.value) },
                     bottomBar = { SearchBar() },
                     content = {
-                        if (state.value is UiState.StationListReady) {
+                        if (uiState.value is MainUiState.StationListReady) {
                             MainScreen(
-                                list = (state.value as UiState.StationListReady).list!!,
-                                modifier = Modifier.padding(it)
+                                list = (uiState.value as MainUiState.StationListReady).list!!,
+                                modifier = Modifier.padding(it),
+                                vm = vm
                             )
                         } else {
                             MainScreen(
-                                modifier = Modifier.padding(it))
+                                modifier = Modifier.padding(it),
+                                vm = vm
+                            )
                         }
                     }
                 )

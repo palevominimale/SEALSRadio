@@ -28,6 +28,7 @@ import com.google.accompanist.placeholder.shimmer
 import app.seals.radio.R
 import app.seals.radio.main.MainActivityViewModel
 import coil.compose.AsyncImagePainter
+import coil.request.CachePolicy
 import coil.request.ImageRequest
 
 @Composable
