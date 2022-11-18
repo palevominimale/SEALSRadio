@@ -24,16 +24,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             val uiState = vm.uiState.collectAsState()
             val playerState = vm.playerState.collectAsState()
-            val playerControls = {}
 
             SEALSRadioTheme {
                 Scaffold(
                     topBar = { PlayerBar(
                         state = playerState.value,
-                        onPlay = { vm.play() },
-                        onStop = { vm.stop() },
-                        onNext = { vm.next() },
-                        onPrev = { vm.prev() }
+                        onIntent = { vm.playerIntent(it) }
                     ) },
                     bottomBar = { SearchBar() },
                     content = {

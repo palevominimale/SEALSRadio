@@ -8,6 +8,7 @@ import app.seals.radio.domain.usecases.GetTopListUseCase
 import app.seals.radio.states.MainUiState
 import app.seals.radio.entities.api.ApiResult
 import app.seals.radio.entities.responses.StationModel
+import app.seals.radio.intents.PlayerIntent
 import app.seals.radio.player.PlayerService
 import app.seals.radio.states.PlayerState
 import kotlinx.coroutines.CoroutineScope
@@ -61,6 +62,18 @@ class MainActivityViewModel(
         }
     }
 
+    fun playerIntent(intent: PlayerIntent) {
+        viewModelScope.launch {
+            Log.e("MAVM_player_intent", "$intent")
+            when(intent) {
+                is PlayerIntent.Play -> play()
+                is PlayerIntent.Stop -> stop()
+                is PlayerIntent.Next -> next()
+                is PlayerIntent.Previous -> prev()
+            }
+        }
+    }
+
     fun getTop() {
         scope.launch {
             _apiState.emit(getTop.execute())
@@ -85,22 +98,22 @@ class MainActivityViewModel(
         Log.e("MAVM_", "${station.name} ${station.urlResolved} ")
     }
 
-    fun play() {
+    private fun play() {
         viewModelScope.launch {
             _pState.emit(PlayerState.IsPlaying(_currentStation.value))
         }
         player.play()
     }
-    fun stop() {
+    private fun stop() {
         viewModelScope.launch {
             _pState.emit(PlayerState.IsStopped(_currentStation.value))
         }
         player.stop()
     }
-    fun next() {
+    private fun next() {
 
     }
-    fun prev() {
+    private fun prev() {
 
     }
 
