@@ -2,7 +2,7 @@
 
 package app.seals.radio.data.api
 
-import app.seals.redio.entities.api.ApiResult
+import app.seals.radio.entities.api.ApiResult
 import retrofit2.HttpException
 import retrofit2.Response
 

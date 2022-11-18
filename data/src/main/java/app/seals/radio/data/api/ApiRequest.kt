@@ -1,9 +1,9 @@
 package app.seals.radio.data.api
 
-import app.seals.redio.entities.responses.CountryModel
-import app.seals.redio.entities.responses.LanguageModel
-import app.seals.redio.entities.responses.StationModel
-import app.seals.redio.entities.responses.TagModel
+import app.seals.radio.entities.responses.CountryModel
+import app.seals.radio.entities.responses.LanguageModel
+import app.seals.radio.entities.responses.StationModel
+import app.seals.radio.entities.responses.TagModel
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Path

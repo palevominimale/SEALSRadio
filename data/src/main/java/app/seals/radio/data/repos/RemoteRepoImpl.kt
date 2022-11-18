@@ -2,7 +2,7 @@ package app.seals.radio.data.repos
 
 import app.seals.radio.data.api.NetworkRequest
 import app.seals.radio.domain.interfaces.RemoteRepo
-import app.seals.redio.entities.api.ApiResult
+import app.seals.radio.entities.api.ApiResult
 
 class RemoteRepoImpl(
     private val request: NetworkRequest

@@ -3,4 +3,5 @@
     <string name="stations_name">Station name</string>
     <string name="stations_country">Country</string>
     <string name="stations_codec">Codec</string>
+    <string name="search_text">Search</string>
 </resources>

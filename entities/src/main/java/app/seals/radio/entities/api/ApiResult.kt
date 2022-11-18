@@ -1,4 +1,4 @@
-package app.seals.redio.entities.api
+package app.seals.radio.entities.api
 
 sealed interface ApiResult {
     data class ApiSuccess(val data: List<Any>) : ApiResult

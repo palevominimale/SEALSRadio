@@ -1,6 +1,6 @@
 package app.seals.radio.ui
 
-import app.seals.redio.entities.responses.StationModel
+import app.seals.radio.entities.responses.StationModel
 
 sealed interface UiState {
     object IsLoading : UiState

@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.seals.radio.domain.usecases.GetTopListUseCase
 import app.seals.radio.ui.UiState
-import app.seals.redio.entities.api.ApiResult
-import app.seals.redio.entities.responses.StationModel
+import app.seals.radio.entities.api.ApiResult
+import app.seals.radio.entities.responses.StationModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

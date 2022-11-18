@@ -1,6 +1,6 @@
 package app.seals.radio.domain.interfaces
 
-import app.seals.redio.entities.api.ApiResult
+import app.seals.radio.entities.api.ApiResult
 
 interface RemoteRepo {
     suspend fun getTopList() : ApiResult

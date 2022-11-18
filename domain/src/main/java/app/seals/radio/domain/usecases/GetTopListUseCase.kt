@@ -1,7 +1,7 @@
 package app.seals.radio.domain.usecases
 
 import app.seals.radio.domain.interfaces.RemoteRepo
-import app.seals.redio.entities.api.ApiResult
+import app.seals.radio.entities.api.ApiResult
 
 class GetTopListUseCase(
     private val repo: RemoteRepo

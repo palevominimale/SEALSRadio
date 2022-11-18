@@ -1,7 +1,7 @@
 package app.seals.radio.data.api
 
 import app.seals.radio.data.api.ApiHandler.handleApi
-import app.seals.redio.entities.api.ApiResult
+import app.seals.radio.entities.api.ApiResult
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
