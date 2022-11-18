@@ -58,6 +58,7 @@ fun SearchBar(modifier: Modifier = Modifier) {
                         modifier = Modifier.padding(end = 8.dp),
                         painter = rememberVectorPainter(Icons.Outlined.Search),
                         contentDescription = stringResource(id = R.string.search_text),
+                        tint = Color.LightGray,
                     )
                 },
                 style = Typography.labelMedium

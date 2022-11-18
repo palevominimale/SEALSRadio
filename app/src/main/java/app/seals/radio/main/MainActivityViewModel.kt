@@ -58,4 +58,8 @@ class MainActivityViewModel(
         }
     }
 
+    fun selectStation(uuid: String) {
+
+    }
+
 }

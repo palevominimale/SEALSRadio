@@ -1,5 +1,7 @@
 package app.seals.radio.ui.screens.main
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,6 +26,7 @@ import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
 import app.seals.radio.R
+import app.seals.radio.main.MainActivityViewModel
 import coil.compose.AsyncImagePainter
 import coil.request.ImageRequest
 
@@ -31,8 +34,9 @@ import coil.request.ImageRequest
 @Preview
 fun MainScreen(
     list: List<StationModel?> =
-        mutableListOf<StationModel?>().apply { repeat(10) {this.add(null)} },
+        mutableListOf<StationModel?>().apply { repeat(10) { this.add(null) } },
     placeholders: Boolean = true,
+    vm: MainActivityViewModel? = null,
     modifier: Modifier = Modifier
 ) {
 
@@ -41,14 +45,18 @@ fun MainScreen(
     ) {
         list.forEachIndexed { _, model ->
             item {
-                StationItem(model)
+                StationItem(model, onClick = { vm!!.selectStation(it) })
             }
         }
     }
 }
 
 @Composable
-private fun StationItem(model : StationModel? = null, modifier: Modifier = Modifier) {
+private fun StationItem(
+    model : StationModel? = null,
+    onClick: (item: String) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = Color.White,
@@ -56,6 +64,12 @@ private fun StationItem(model : StationModel? = null, modifier: Modifier = Modif
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable(
+                indication = null,
+                interactionSource = MutableInteractionSource()
+            ) {
+                onClick(model?.stationuuid.toString())
+            }
     ) {
         val highlight = PlaceholderHighlight.shimmer(
             highlightColor = Color.White,
