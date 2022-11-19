@@ -7,6 +7,7 @@ import app.seals.radio.entities.responses.TagModel
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiRequest {
 
@@ -15,6 +16,12 @@ interface ApiRequest {
 
     @GET("stations/topclick/{n}")
     fun getListTop(@Path("n") num: Int): Call<List<StationModel>>
+
+    @GET("stations/search")
+    fun getListWithFilter(
+        @Query("country") country: String,
+        @Query("tagList") tagList: String,
+    ): Call<List<StationModel>>
 
     @GET("stations/bylanguage/{lang}")
     fun getListByLang(@Path("lang") lang: String): Call<List<StationModel>>

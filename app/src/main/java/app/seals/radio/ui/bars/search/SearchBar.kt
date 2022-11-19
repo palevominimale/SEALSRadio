@@ -1,7 +1,12 @@
-package app.seals.radio.ui.bars
+package app.seals.radio.ui.bars.search
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -11,11 +16,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,7 +30,18 @@ import app.seals.radio.ui.theme.Typography
 
 @Composable
 @Preview
-fun SearchBar(modifier: Modifier = Modifier) {
+fun SearchBar(
+    showFilter: () -> Unit = {},
+    modifier: Modifier = Modifier) {
+    val filterVisible = remember {mutableStateOf(false)}
+
+    AnimatedVisibility(
+        visible = filterVisible.value,
+        enter = slideInVertically(),
+        exit = slideOutVertically()
+    ) {
+        FilterPad()
+    }
 
     Surface(
         color = Color.White,
@@ -61,7 +77,8 @@ fun SearchBar(modifier: Modifier = Modifier) {
                         tint = Color.LightGray,
                     )
                 },
-                style = Typography.labelMedium
+                style = Typography.labelMedium,
+                textUpdate = {}
             )
             Icon(
                 imageVector = Icons.Default.Menu,
@@ -69,10 +86,11 @@ fun SearchBar(modifier: Modifier = Modifier) {
                 tint = Color.LightGray,
                 modifier = Modifier
                     .padding(start = 16.dp)
+                    .clip(CircleShape)
+                    .clickable { filterVisible.value = !filterVisible.value!! }
             )
         }
     }
-
 }
 
 @Composable
@@ -81,14 +99,18 @@ private fun CustomSearchField(
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
     placeholderText: String = stringResource(id = R.string.search_text),
-    style: TextStyle = MaterialTheme.typography.labelMedium
+    style: TextStyle = MaterialTheme.typography.labelMedium,
+    textUpdate: (text: String) -> Unit = {}
 ) {
 
     var text by remember { mutableStateOf("") }
 
     BasicTextField(modifier = modifier,
         value = text,
-        onValueChange = { text = it },
+        onValueChange = {
+            text = it
+            textUpdate(it)
+                        },
         singleLine = true,
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
         textStyle = style,

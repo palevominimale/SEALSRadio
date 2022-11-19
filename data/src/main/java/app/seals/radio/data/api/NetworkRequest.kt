@@ -1,12 +1,15 @@
 package app.seals.radio.data.api
 
 import app.seals.radio.data.api.ApiHandler.handleApi
+import app.seals.radio.data.preferences.SharedPrefsManager
 import app.seals.radio.entities.api.ApiResult
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class NetworkRequest {
+class NetworkRequest(
+    private val prefs: SharedPrefsManager
+) {
 
     private val retrofit: ApiRequest by lazy {
         Retrofit.Builder()
@@ -30,5 +33,13 @@ class NetworkRequest {
 
     suspend fun getTop(num: Int) : ApiResult {
         return execute { retrofit.getListTop(num) }
+    }
+
+    suspend fun getListWithFilter() : ApiResult {
+        val filter = prefs.getFilter()
+        return execute { retrofit.getListWithFilter(
+            country = filter.country ?: "",
+            tagList = filter.tags ?: ""
+        ) }
     }
 }

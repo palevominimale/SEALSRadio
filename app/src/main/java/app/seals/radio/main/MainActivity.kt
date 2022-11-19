@@ -10,7 +10,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import app.seals.radio.states.MainUiState
 import app.seals.radio.ui.bars.PlayerBar
-import app.seals.radio.ui.bars.SearchBar
+import app.seals.radio.ui.bars.search.SearchBar
 import app.seals.radio.ui.screens.main.MainScreen
 import app.seals.radio.ui.screens.splash.SplashScreen
 import app.seals.radio.ui.theme.SEALSRadioTheme
