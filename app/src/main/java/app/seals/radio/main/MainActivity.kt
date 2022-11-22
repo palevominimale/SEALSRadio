@@ -68,8 +68,8 @@ class MainActivity : ComponentActivity() {
                 connection,
                 Context.BIND_AUTO_CREATE
             )
-            SEALSRadioTheme {
 
+            SEALSRadioTheme {
                 if(backgroundPlayService != null) {
                     when(playerState.value) {
                         is PlayerState.IsPlaying -> {
@@ -91,13 +91,7 @@ class MainActivity : ComponentActivity() {
                     }
                     lifecycleScope.launch {
                         backgroundPlayerServiceState?.collect {
-                            Log.d(TAG, "Collected: $it")
-                            if(it) {
-                                vm.play()
-                            }
-                            if(!it) {
-                                vm.pause()
-                            }
+                            if(it) vm.play() else vm.pause()
                         }
                     }
                 }
