@@ -6,7 +6,6 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Binder
 import android.os.IBinder
@@ -17,8 +16,14 @@ import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
-
-private const val TAG = "BPS_"
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 
 class BackgroundPlayerService : Service() {
 
@@ -30,16 +35,27 @@ class BackgroundPlayerService : Service() {
     private val notificationId: Int = 123987
     private var playbackPos: Long = 0
     private var playWhenReady = true
+    private val _playerStateFlow = MutableStateFlow(false)
     private lateinit var context: Context
     private lateinit var playerNotificationManager: PlayerNotificationManager
+    val isPlayingStateFlow get() = _playerStateFlow.asStateFlow()
 
     override fun onCreate() {
         super.onCreate()
         context = this
     }
 
+    private val playerListener = object : Player.Listener {
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
+            super.onIsPlayingChanged(isPlaying)
+            MainScope().launch {
+                Log.d("BPS_", "playing: $isPlaying")
+                _playerStateFlow.emit(isPlaying)
+            }
+        }
+    }
+
     private fun initializePlayer(context: Context){
-        Log.d(TAG, "initializePlayer()")
         if (exoPlayer == null)
             exoPlayer = ExoPlayer.Builder(context).build()
         val mediaItem = MediaItem.fromUri(station.url?: "")
@@ -48,13 +64,13 @@ class BackgroundPlayerService : Service() {
             playWhenReady = true
             seekTo(playbackPos)
             prepare()
+            addListener(playerListener)
         }
         initPlayerNotificationManager()
         playerNotificationManager.setPlayer(exoPlayer)
     }
 
     private fun initPlayerNotificationManager() {
-        Log.d(TAG, "initPlayerNotificationManager()")
         playerNotificationManager = PlayerNotificationManager.Builder(
             context,
             notificationId,
@@ -82,11 +98,9 @@ class BackgroundPlayerService : Service() {
             setNotificationListener(
                 object : PlayerNotificationManager.NotificationListener{
                     override fun onNotificationPosted(notificationId: Int, notification: Notification, ongoing: Boolean) {
-                        Log.d(TAG, "NotificationListener.onNotificationPosted(), startForeground()")
                         startForeground(notificationId, notification)
                     }
                     override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
-                        Log.d(TAG, "NotificationListener.onNotificationCancelled(), selfStop()")
                         stopSelf()
                         stopForeground(true)
                     }
@@ -121,9 +135,7 @@ class BackgroundPlayerService : Service() {
     fun getPlayingMediaID() = station.stationuuid
 
     private fun releasePlayer(){
-        Log.d(TAG, "releasePlayer()")
         playerNotificationManager.setPlayer(null)
-
         if (exoPlayer != null){
             playWhenReady = exoPlayer!!.playWhenReady
             playbackPos = exoPlayer!!.currentPosition
@@ -137,17 +149,15 @@ class BackgroundPlayerService : Service() {
         val mediaItem = MediaItem.fromUri(this.station.url ?: "")
         exoPlayer?.setMediaItem(mediaItem)
         exoPlayer?.prepare()
-        exoPlayer?.playWhenReady = true
+        exoPlayer?.playWhenReady = false
     }
 
     override fun onBind(intent: Intent?): IBinder {
-        Log.d(TAG, "onBind()")
         initializePlayer(context)
         return backgroundPlayIBinder
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
-        Log.d(TAG, "onUnbind()")
         releasePlayer()
         stopSelf()
         return super.onUnbind(intent)
@@ -155,15 +165,14 @@ class BackgroundPlayerService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d(TAG, "onDestroy()")
         releasePlayer()
         stopSelf()
     }
 
-    inner class BackgroundServiceBinder: Binder(){
-        fun getExoplayer() = exoPlayer
+    inner class BackgroundServiceBinder: Binder() {
         fun getService() =this@BackgroundPlayerService
         fun getPlayingMediaID() = station.stationuuid
+        fun getPlayer() = exoPlayer
     }
 
 }

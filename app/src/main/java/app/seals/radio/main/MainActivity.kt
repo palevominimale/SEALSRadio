@@ -14,6 +14,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
+import app.seals.radio.intents.PlayerIntent
 import app.seals.radio.player.BackgroundPlayerService
 import app.seals.radio.states.MainUiState
 import app.seals.radio.states.PlayerState
@@ -22,6 +24,8 @@ import app.seals.radio.ui.bars.search.SearchBar
 import app.seals.radio.ui.screens.main.MainScreen
 import app.seals.radio.ui.screens.splash.SplashScreen
 import app.seals.radio.ui.theme.SEALSRadioTheme
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 private const val TAG = "MA_"
@@ -30,6 +34,7 @@ private const val TAG = "MA_"
 class MainActivity : ComponentActivity() {
     private val vm by viewModel<MainActivityViewModel>()
     private var backgroundPlayService: BackgroundPlayerService? = null
+    private var backgroundPlayerServiceState: StateFlow<Boolean>? = null
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -41,6 +46,7 @@ class MainActivity : ComponentActivity() {
                     backgroundPlayService?.updatePlayer(vm.playerState.value.station)
                 }
                 backgroundPlayService = service.getService()
+                backgroundPlayerServiceState = backgroundPlayService!!.isPlayingStateFlow
             }
         }
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -56,6 +62,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val uiState = vm.uiState.collectAsState()
             val playerState = vm.playerState.collectAsState()
+
             bindService(
                 Intent(applicationContext, BackgroundPlayerService::class.java),
                 connection,
@@ -69,11 +76,29 @@ class MainActivity : ComponentActivity() {
                             if(backgroundPlayService!!.getPlayingMediaID() == vm.playerState.value.station.stationuuid) {
                                 backgroundPlayService!!.play()
                             } else {
-                                Log.d(TAG, "player item updated")
                                 backgroundPlayService!!.updatePlayer(vm.playerState.value.station)
+                                backgroundPlayService!!.play()
                             }
                         }
-                        is PlayerState.IsStopped -> backgroundPlayService!!.pause()
+                        is PlayerState.IsStopped -> {
+                            if(backgroundPlayService!!.getPlayingMediaID() == vm.playerState.value.station.stationuuid) {
+                                backgroundPlayService!!.pause()
+                            } else {
+                                backgroundPlayService!!.updatePlayer(vm.playerState.value.station)
+                                backgroundPlayService!!.pause()
+                            }
+                        }
+                    }
+                    lifecycleScope.launch {
+                        backgroundPlayerServiceState?.collect {
+                            Log.d(TAG, "Collected: $it")
+                            if(it) {
+                                vm.play()
+                            }
+                            if(!it) {
+                                vm.pause()
+                            }
+                        }
                     }
                 }
 
@@ -83,7 +108,9 @@ class MainActivity : ComponentActivity() {
                     Scaffold(
                         topBar = { PlayerBar(
                             state = playerState.value,
-                            onIntent = { vm.playerIntent(it) }
+                            onIntent = { vm.playerIntent(
+                                intent = it,
+                                backgroundPlayerServiceState = backgroundPlayerServiceState?.value ?: false) }
                         ) },
                         bottomBar = { SearchBar() },
                         content = {

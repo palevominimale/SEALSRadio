@@ -3,6 +3,7 @@ package app.seals.radio.main
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import app.seals.radio.domain.usecases.GetTopListUseCase
 import app.seals.radio.states.MainUiState
@@ -47,6 +48,14 @@ class MainActivityViewModel(
                         Log.e("MAVM_api_scs", "$it")
                         when(it.data[0]) {
                             is StationModel -> {
+                                if(_currentStation.value.url == null) {
+                                    if(_pState.value is PlayerState.IsStopped) {
+                                        _pState.emit(PlayerState.IsStopped(it.data[0] as StationModel))
+                                    } else {
+                                        _pState.emit(PlayerState.IsPlaying(it.data[0] as StationModel))
+                                    }
+                                    _currentStation.value = it.data[0] as StationModel
+                                }
                                 _state.emit(MainUiState.StationListReady(it.data as List<StationModel>))
                                 Log.e("MAVM_state", "${it.data}")
                             }
@@ -62,14 +71,18 @@ class MainActivityViewModel(
         }
     }
 
-    fun playerIntent(intent: PlayerIntent) {
+    fun playerIntent(intent: PlayerIntent, backgroundPlayerServiceState: Boolean) {
         viewModelScope.launch {
             Log.e("MAVM_player_intent", "$intent")
             when(intent) {
-                is PlayerIntent.Play -> play()
-                is PlayerIntent.Stop -> stop()
-                is PlayerIntent.Next -> next()
-                is PlayerIntent.Previous -> prev()
+                is PlayerIntent.Play -> {
+                    if(!backgroundPlayerServiceState) play()
+                }
+                is PlayerIntent.Stop -> {
+                    if(backgroundPlayerServiceState) pause()
+                }
+                is PlayerIntent.Next -> {}
+                is PlayerIntent.Previous -> {}
             }
         }
     }
@@ -82,34 +95,31 @@ class MainActivityViewModel(
 
     fun selectStation(station: StationModel) {
         _currentStation.value = station
-//        player.setUrl(station.urlResolved ?: "")
         viewModelScope.launch {
             when(_pState.value) {
                 is PlayerState.IsStopped -> {
                     _pState.emit(PlayerState.IsStopped(_currentStation.value))
-//                    player.stop()
                 }
                 is PlayerState.IsPlaying -> {
                     _pState.emit(PlayerState.IsPlaying(_currentStation.value))
-//                    player.play()
                 }
             }
         }
         Log.e("MAVM_", "${station.name} ${station.urlResolved} ")
     }
 
-    private fun play() {
+    fun play() {
         viewModelScope.launch {
             _pState.emit(PlayerState.IsPlaying(_currentStation.value))
         }
-//        player.play()
     }
-    private fun stop() {
+
+    fun pause() {
         viewModelScope.launch {
             _pState.emit(PlayerState.IsStopped(_currentStation.value))
         }
-//        player.stop()
     }
+
     private fun next() {
 
     }
