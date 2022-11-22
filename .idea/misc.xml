@@ -3,6 +3,8 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/seal/AndroidStudioProjects/SEALSRadio/player/src/main/res/drawable/ic_pause_60px.xml" value="0.1735" />
+        <entry key="..\:/Users/seal/AndroidStudioProjects/SEALSRadio/player/src/main/res/drawable/ic_play_60px.xml" value="0.1735" />
         <entry key="..\:/Users/seal/AndroidStudioProjects/SEALSRadio/player/src/main/res/drawable/ic_stop.xml" value="0.1815" />
       </map>
     </option>
