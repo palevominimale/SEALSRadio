@@ -11,11 +11,13 @@ import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.view.ContentInfoCompat
 import app.seals.radio.entities.responses.StationModel
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
+import com.google.android.exoplayer2.util.FlagSet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.coroutineScope
@@ -116,6 +118,7 @@ class BackgroundPlayerService : Service() {
         }.build()
         playerNotificationManager.apply {
             setColor(Color.LTGRAY)
+            setBadgeIconType(Notification.BADGE_ICON_NONE)
             setPlayer(exoPlayer)
             setUseNextAction(true)
             setUsePlayPauseActions(true)
@@ -172,7 +175,6 @@ class BackgroundPlayerService : Service() {
     inner class BackgroundServiceBinder: Binder() {
         fun getService() =this@BackgroundPlayerService
         fun getPlayingMediaID() = station.stationuuid
-        fun getPlayer() = exoPlayer
     }
 
 }
