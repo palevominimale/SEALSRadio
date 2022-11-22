@@ -1,8 +1,6 @@
 package app.seals.radio.ui.bars.search
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -31,12 +29,17 @@ import app.seals.radio.ui.theme.Typography
 @Composable
 @Preview
 fun SearchBar(
-    showFilter: () -> Unit = {},
+    switchFilter: () -> Unit = {},
+    filterState: FilterUiState = FilterUiState.Hidden,
     modifier: Modifier = Modifier) {
-    val filterVisible = remember {mutableStateOf(false)}
+
+    val filterVisible = when (filterState) {
+        is FilterUiState.Hidden -> false
+        is FilterUiState.Shown -> true
+    }
 
     AnimatedVisibility(
-        visible = filterVisible.value,
+        visible = filterVisible,
         enter = slideInVertically(),
         exit = slideOutVertically()
     ) {
@@ -87,7 +90,7 @@ fun SearchBar(
                 modifier = Modifier
                     .padding(start = 16.dp)
                     .clip(CircleShape)
-                    .clickable { filterVisible.value = !filterVisible.value!! }
+                    .clickable { switchFilter() }
             )
         }
     }

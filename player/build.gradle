@@ -34,6 +34,7 @@ dependencies {
     def exo = '2.18.1'
 
     implementation project(':domain')
+    implementation project(':entities')
 
     //ExoPlayer
     implementation "com.google.android.exoplayer:exoplayer:$exo"
@@ -42,6 +43,8 @@ dependencies {
     implementation "com.google.android.exoplayer:exoplayer-hls:$exo"
     implementation "com.google.android.exoplayer:exoplayer-smoothstreaming:$exo"
     implementation "com.google.android.exoplayer:exoplayer-ui:$exo"
+    implementation "com.google.android.exoplayer:extension-mediasession:$exo"
+    implementation 'com.android.volley:volley:1.2.1'
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'

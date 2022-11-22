@@ -2,6 +2,7 @@ package app.seals.radio.ui.bars.search
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -22,7 +23,10 @@ fun FilterPad() {
             .fillMaxWidth()
             .height(50.dp)
     ) {
-        Text(text = "filter")
+        Text(
+            text = "filter",
+            modifier = Modifier.padding(8.dp)
+        )
     }
 
 }

@@ -9,26 +9,25 @@ import app.seals.radio.states.MainUiState
 import app.seals.radio.entities.api.ApiResult
 import app.seals.radio.entities.responses.StationModel
 import app.seals.radio.intents.PlayerIntent
-import app.seals.radio.player.PlayerService
 import app.seals.radio.states.PlayerState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @Suppress("UNCHECKED_CAST")
 class MainActivityViewModel(
-    private val getTop: GetTopListUseCase,
-    private val player: PlayerService
+    private val getTop: GetTopListUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<MainUiState>(MainUiState.Splash)
     private val _pState = MutableStateFlow<PlayerState>(PlayerState.IsStopped(StationModel()))
     private val _apiState = MutableStateFlow<ApiResult?>(null)
     private val _currentStation = mutableStateOf(StationModel())
-    val uiState get() = _state
-    val playerState get() = _pState
+    val uiState get() = _state as StateFlow<MainUiState>
+    val playerState get() = _pState as StateFlow<PlayerState>
 
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -38,26 +37,26 @@ class MainActivityViewModel(
                 when(it) {
                     is ApiResult.ApiError -> {
                         Log.e("MAVM_api_err", "$it")
-                        uiState.emit(MainUiState.Error(it.code, it.message))
+                        _state.emit(MainUiState.Error(it.code, it.message))
                     }
                     is ApiResult.ApiException -> {
                         Log.e("MAVM_api_exc", "$it")
-                        uiState.emit(MainUiState.Exception(it.e))
+                        _state.emit(MainUiState.Exception(it.e))
                     }
                     is ApiResult.ApiSuccess -> {
                         Log.e("MAVM_api_scs", "$it")
                         when(it.data[0]) {
                             is StationModel -> {
-                                uiState.emit(MainUiState.StationListReady(it.data as List<StationModel>))
+                                _state.emit(MainUiState.StationListReady(it.data as List<StationModel>))
                                 Log.e("MAVM_state", "${it.data}")
                             }
                             else -> {
-                                uiState.emit(MainUiState.IsLoading)
+                                _state.emit(MainUiState.IsLoading)
                                 Log.e("MAVM_state_else", "${it.data}")
                             }
                         }
                     }
-                    else -> uiState.emit(MainUiState.Splash)
+                    else -> _state.emit(MainUiState.Splash)
                 }
             }
         }
@@ -83,16 +82,16 @@ class MainActivityViewModel(
 
     fun selectStation(station: StationModel) {
         _currentStation.value = station
-        player.setUrl(station.urlResolved ?: "")
+//        player.setUrl(station.urlResolved ?: "")
         viewModelScope.launch {
             when(_pState.value) {
                 is PlayerState.IsStopped -> {
                     _pState.emit(PlayerState.IsStopped(_currentStation.value))
-                    player.stop()
+//                    player.stop()
                 }
                 is PlayerState.IsPlaying -> {
                     _pState.emit(PlayerState.IsPlaying(_currentStation.value))
-                    player.play()
+//                    player.play()
                 }
             }
         }
@@ -103,13 +102,13 @@ class MainActivityViewModel(
         viewModelScope.launch {
             _pState.emit(PlayerState.IsPlaying(_currentStation.value))
         }
-        player.play()
+//        player.play()
     }
     private fun stop() {
         viewModelScope.launch {
             _pState.emit(PlayerState.IsStopped(_currentStation.value))
         }
-        player.stop()
+//        player.stop()
     }
     private fun next() {
 
