@@ -64,7 +64,6 @@ fun MainScreen(
         contentAlignment = Alignment.BottomCenter,
         modifier = modifier
             .fillMaxSize()
-//            .zIndex(2f)
     ) {
         AnimatedVisibility(
             visible = filterIsShown,
