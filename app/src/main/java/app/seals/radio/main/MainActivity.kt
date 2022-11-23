@@ -21,7 +21,7 @@ import app.seals.radio.ui.bars.PlayerBar
 import app.seals.radio.ui.bars.SearchBar
 import app.seals.radio.ui.screens.ExceptionScreen
 import app.seals.radio.ui.screens.main.MainScreen
-import app.seals.radio.ui.screens.splash.SplashScreen
+import app.seals.radio.ui.screens.SplashScreen
 import app.seals.radio.ui.theme.SEALSRadioTheme
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

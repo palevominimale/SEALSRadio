@@ -3,7 +3,6 @@ package app.seals.radio.main
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import app.seals.radio.data.preferences.SharedPrefsManager
 import app.seals.radio.domain.models.FilterOptions
@@ -164,6 +163,18 @@ class MainActivityViewModel(
         viewModelScope.launch {
             _fState.emit(false)
         }
+    }
+
+    fun getFavorites() : List<String> {
+        return prefs.getFavorites()
+    }
+
+    fun addFavorite(uuid: String) {
+        prefs.addFavorite(uuid)
+    }
+
+    fun delFavorite(uuid: String) {
+        prefs.delFavorite(uuid)
     }
 
     private fun getByFilter() {
