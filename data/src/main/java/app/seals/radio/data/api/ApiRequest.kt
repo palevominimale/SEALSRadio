@@ -17,10 +17,12 @@ interface ApiRequest {
     @GET("stations/topclick/{n}")
     fun getListTop(@Path("n") num: Int): Call<List<StationModel>>
 
-    @GET("stations/search")
+    @GET("stations/search?")
     fun getListWithFilter(
         @Query("country") country: String,
         @Query("tagList") tagList: String,
+        @Query("language") language: String,
+        @Query("limit") limit: Int = 50
     ): Call<List<StationModel>>
 
     @GET("stations/bylanguage/{lang}")
@@ -42,6 +44,6 @@ interface ApiRequest {
     fun getCountryList(): Call<List<CountryModel>>
 
     companion object {
-        const val BASE_URL = """https://at1.api.radio-browser.info/json/"""
+        const val BASE_URL = """http://89.58.16.19//json/"""
     }
 }

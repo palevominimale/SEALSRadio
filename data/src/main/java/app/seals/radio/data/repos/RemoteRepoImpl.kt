@@ -19,7 +19,6 @@ class RemoteRepoImpl(
     }
 
     override suspend fun getListWithFilter() : ApiResult {
-        val filter = FilterOptions()
         return request.getListWithFilter()
     }
 

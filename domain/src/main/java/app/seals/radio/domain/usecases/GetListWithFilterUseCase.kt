@@ -7,7 +7,7 @@ import app.seals.radio.entities.api.ApiResult
 class GetListWithFilterUseCase(
     private val repo: RemoteRepo
 ) {
-    suspend fun execute(filter: FilterOptions) : ApiResult {
+    suspend fun execute() : ApiResult {
         return repo.getListWithFilter()
     }
 }

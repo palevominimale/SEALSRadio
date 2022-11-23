@@ -7,7 +7,9 @@ import org.koin.dsl.module
 val uiDi = module {
     viewModel {
         MainActivityViewModel(
-            getTop = get()
+            getTop = get(),
+            getByFilter = get(),
+            prefs = get()
         )
     }
 }

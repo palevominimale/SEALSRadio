@@ -5,6 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
+import app.seals.radio.data.preferences.SharedPrefsManager
+import app.seals.radio.domain.models.FilterOptions
+import app.seals.radio.domain.usecases.GetListWithFilterUseCase
 import app.seals.radio.domain.usecases.GetTopListUseCase
 import app.seals.radio.states.MainUiState
 import app.seals.radio.entities.api.ApiResult
@@ -20,19 +23,24 @@ import kotlinx.coroutines.launch
 
 @Suppress("UNCHECKED_CAST")
 class MainActivityViewModel(
-    private val getTop: GetTopListUseCase
+    private val getTop: GetTopListUseCase,
+    private val getByFilter: GetListWithFilterUseCase,
+    private val prefs: SharedPrefsManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<MainUiState>(MainUiState.Splash)
     private val _pState = MutableStateFlow<PlayerState>(PlayerState.IsStopped(StationModel()))
+    private val _fState = MutableStateFlow(false)
     private val _apiState = MutableStateFlow<ApiResult?>(null)
     private val _currentStation = mutableStateOf(StationModel())
     val uiState get() = _state as StateFlow<MainUiState>
+    val filterState get() = _fState as StateFlow<Boolean>
     val playerState get() = _pState as StateFlow<PlayerState>
-
+    private var filterOptions = FilterOptions()
     private val scope = CoroutineScope(Dispatchers.IO)
 
     init {
+        filterOptions = prefs.getFilter()
         viewModelScope.launch {
             _apiState.collectLatest {
                 when(it) {
@@ -46,23 +54,27 @@ class MainActivityViewModel(
                     }
                     is ApiResult.ApiSuccess -> {
                         Log.e("MAVM_api_scs", "$it")
-                        when(it.data[0]) {
-                            is StationModel -> {
-                                if(_currentStation.value.url == null) {
-                                    if(_pState.value is PlayerState.IsStopped) {
-                                        _pState.emit(PlayerState.IsStopped(it.data[0] as StationModel))
-                                    } else {
-                                        _pState.emit(PlayerState.IsPlaying(it.data[0] as StationModel))
+                        if(it.data.isNotEmpty()) {
+                            when(it.data[0]) {
+                                is StationModel -> {
+                                    if(_currentStation.value.url == null) {
+                                        if(_pState.value is PlayerState.IsStopped) {
+                                            _pState.emit(PlayerState.IsStopped(it.data[0] as StationModel))
+                                        } else {
+                                            _pState.emit(PlayerState.IsPlaying(it.data[0] as StationModel))
+                                        }
+                                        _currentStation.value = it.data[0] as StationModel
                                     }
-                                    _currentStation.value = it.data[0] as StationModel
+                                    _state.emit(MainUiState.StationListReady(it.data as List<StationModel>))
+                                    Log.e("MAVM_state", "${it.data}")
                                 }
-                                _state.emit(MainUiState.StationListReady(it.data as List<StationModel>))
-                                Log.e("MAVM_state", "${it.data}")
+                                else -> {
+                                    _state.emit(MainUiState.IsLoading)
+                                    Log.e("MAVM_state_else", "${it.data}")
+                                }
                             }
-                            else -> {
-                                _state.emit(MainUiState.IsLoading)
-                                Log.e("MAVM_state_else", "${it.data}")
-                            }
+                        } else {
+                            _state.emit(MainUiState.Error(666, "empty list"))
                         }
                     }
                     else -> _state.emit(MainUiState.Splash)
@@ -120,11 +132,34 @@ class MainActivityViewModel(
         }
     }
 
-    private fun next() {
-
+    fun setFilter(options: FilterOptions) {
+        filterOptions = options
+        Log.e("MAVM_", "$options")
+        prefs.setFilter(options)
+        getByFilter()
     }
-    private fun prev() {
 
+    fun getFilter() : FilterOptions {
+        filterOptions = prefs.getFilter()
+        Log.e("MAVM_", "$filterOptions")
+        return filterOptions
     }
 
+    fun showFilter() {
+        viewModelScope.launch {
+            _fState.emit(true)
+        }
+    }
+
+    fun hideFilter() {
+        viewModelScope.launch {
+            _fState.emit(false)
+        }
+    }
+
+    private fun getByFilter() {
+        scope.launch {
+            _apiState.emit(getByFilter.execute())
+        }
+    }
 }

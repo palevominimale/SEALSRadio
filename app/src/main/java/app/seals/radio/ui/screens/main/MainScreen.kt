@@ -35,6 +35,7 @@ import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
 import app.seals.radio.R
+import app.seals.radio.domain.models.FilterOptions
 import app.seals.radio.main.MainActivityViewModel
 import coil.compose.AsyncImagePainter
 import coil.request.CachePolicy
@@ -70,11 +71,13 @@ fun MainScreen(
             enter = slideInVertically(initialOffsetY = {2*it}),
             exit = slideOutVertically(targetOffsetY = {it}),
         ) {
-            FilterPad()
+            FilterPad(
+                hideFilter = { vm?.hideFilter() },
+                setFilter = { vm?.setFilter(it) },
+                filterOptions = vm?.getFilter()
+            )
         }
     }
-
-
 }
 
 @Composable

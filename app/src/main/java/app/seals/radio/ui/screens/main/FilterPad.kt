@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.*
@@ -16,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Size
@@ -28,23 +28,27 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import app.seals.radio.R
+import app.seals.radio.domain.models.FilterOptions
 import app.seals.radio.ui.theme.Typography
 
 @Composable
 @Preview
-fun FilterPad() {
+fun FilterPad(
+    hideFilter: () -> Unit = {},
+    setFilter: (FilterOptions) -> Unit = {},
+    filterOptions: FilterOptions? = FilterOptions()
+) {
+    var newOptions = FilterOptions()
     Surface(
         color = Color.White,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         modifier = Modifier
             .fillMaxWidth()
             .shadow(
-                elevation = 5.dp,
+                elevation = 15.dp,
                 shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
             )
     ) {
@@ -58,7 +62,7 @@ fun FilterPad() {
                     .padding(top = 8.dp)
                     .fillMaxWidth()
             ) {
-                Row() {
+                Row {
                     Icon(
                         imageVector = Icons.Outlined.Close,
                         contentDescription = null,
@@ -67,7 +71,7 @@ fun FilterPad() {
                             .size(30.dp)
                             .clip(CircleShape)
                             .clickable {
-
+                                hideFilter()
                             }
                     )
                     Icon(
@@ -78,7 +82,8 @@ fun FilterPad() {
                             .size(30.dp)
                             .clip(CircleShape)
                             .clickable {
-
+                                hideFilter()
+                                setFilter(FilterOptions())
                             }
                     )
                 }
@@ -89,7 +94,6 @@ fun FilterPad() {
                     modifier = Modifier
                         .padding(8.dp)
                 )
-
                 Icon(
                     imageVector = Icons.Outlined.Done,
                     contentDescription = null,
@@ -99,7 +103,8 @@ fun FilterPad() {
                         .size(30.dp)
                         .clip(CircleShape)
                         .clickable {
-
+                            hideFilter()
+                            setFilter(newOptions)
                         }
                 )
             }
@@ -111,15 +116,17 @@ fun FilterPad() {
                 modifier = Modifier
                     .height(1.dp)
                     .fillMaxWidth()
+                    .alpha(0.5f)
             )
             Text(
                 text = stringResource(R.string.filter_countries),
                 textAlign = TextAlign.Center,
                 style = Typography.labelMedium,
                 modifier = Modifier
-                    .padding(vertical = 8.dp,)
+                    .padding(vertical = 8.dp)
             )
             DropdownList(
+                text = filterOptions?.country,
                 items = listOf(
                     "France",
                     "Germany",
@@ -129,33 +136,37 @@ fun FilterPad() {
                     "Netherlands",
                     "Poland",
                     "Ukraine",
-                )
+                ),
+                onSelect = { newOptions = newOptions.copy(country = it) }
             )
             Text(
                 text = stringResource(R.string.filter_languages),
                 textAlign = TextAlign.Center,
                 style = Typography.labelMedium,
                 modifier = Modifier
-                    .padding(vertical = 8.dp,)
+                    .padding(vertical = 8.dp)
             )
             DropdownList(
+                text = filterOptions?.language,
                 items = listOf(
                     "French",
                     "German",
                     "English",
                     "Russian",
-                )
+                ),
+                onSelect = { newOptions = newOptions.copy(language = it) }
             )
             Text(
-                text = stringResource(R.string.filter_tags),
+                text = filterOptions?.tags ?: stringResource(R.string.filter_tags),
                 textAlign = TextAlign.Center,
                 style = Typography.labelMedium,
                 modifier = Modifier
-                    .padding(vertical = 8.dp,)
+                    .padding(vertical = 8.dp)
             )
             SearchTextField(
                 modifier = Modifier
-                    .padding(bottom = 16.dp)
+                    .padding(bottom = 16.dp),
+                onChange = { newOptions = newOptions.copy(tags = it) }
             )
         }
     }
@@ -165,7 +176,9 @@ fun FilterPad() {
 private fun DropdownList(
     modifier: Modifier = Modifier,
     style: TextStyle = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Light),
-    items: List<String>
+    items: List<String>,
+    onSelect: (String) -> Unit = {},
+    text: String? = null
 ) {
 
     var expanded by remember { mutableStateOf(false) }
@@ -191,7 +204,9 @@ private fun DropdownList(
                 },
                 readOnly = true,
                 value = selectedText,
-                onValueChange = { selectedText = it },
+                onValueChange = {
+                    selectedText = it
+                    },
                 singleLine = true,
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                 textStyle = style,
@@ -203,7 +218,7 @@ private fun DropdownList(
                         Box(Modifier.weight(1f)) {
                             if (selectedText.isEmpty()) {
                                 Text(
-                                    text = items[0],
+                                    text = text ?: items[0],
                                     style = style.copy(Color.LightGray)
                                 )
                             }
@@ -230,6 +245,7 @@ private fun DropdownList(
                         onClick = {
                             selectedText = label
                             expanded = false
+                            onSelect(label)
                         }
                     )
                 }
@@ -242,6 +258,7 @@ private fun DropdownList(
 private fun SearchTextField(
     modifier: Modifier = Modifier,
     style: TextStyle = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Light),
+    onChange: (String) -> Unit = {}
 ) {
     var value by remember { mutableStateOf("") }
 
@@ -257,7 +274,10 @@ private fun SearchTextField(
             BasicTextField(
                 modifier = Modifier.padding(vertical = 4.dp),
                 value = value,
-                onValueChange = { value = it },
+                onValueChange = {
+                    value = it
+                    onChange(it)
+                    },
                 singleLine = true,
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                 textStyle = style,

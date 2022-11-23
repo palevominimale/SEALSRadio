@@ -91,7 +91,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                val filterIsShown = mutableStateOf(false)
+                val filterIsShown = vm.filterState.collectAsState()
 
                 if(uiState.value is MainUiState.Splash) {
                     SplashScreen()
@@ -104,16 +104,18 @@ class MainActivity : ComponentActivity() {
                                 backgroundPlayerServiceState = backgroundPlayerServiceState?.value ?: false) }
                         ) },
                         bottomBar = { SearchBar(
-                            switchFilter = { filterIsShown.value = !filterIsShown.value }
+                            switchFilter = { if(vm.filterState.value) vm.hideFilter() else vm.showFilter() }
                         ) },
                         content = {
                             if (uiState.value is MainUiState.StationListReady) {
-                                MainScreen(
-                                    list = (uiState.value as MainUiState.StationListReady).list!!,
-                                    modifier = Modifier.padding(it),
-                                    vm = vm,
-                                    filterIsShown = filterIsShown.value
-                                )
+                                if((uiState.value as MainUiState.StationListReady).list!!.isNotEmpty()) {
+                                    MainScreen(
+                                        list = (uiState.value as MainUiState.StationListReady).list!!,
+                                        modifier = Modifier.padding(it),
+                                        vm = vm,
+                                        filterIsShown = filterIsShown.value
+                                    )
+                                }
                             } else {
                                 MainScreen(
                                     modifier = Modifier.padding(it),

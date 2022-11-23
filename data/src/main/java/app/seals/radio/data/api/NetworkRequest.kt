@@ -39,7 +39,8 @@ class NetworkRequest(
         val filter = prefs.getFilter()
         return execute { retrofit.getListWithFilter(
             country = filter.country ?: "",
-            tagList = filter.tags ?: ""
+            tagList = filter.tags?.lowercase() ?: "",
+            language = filter.language?.lowercase() ?: ""
         ) }
     }
 }
