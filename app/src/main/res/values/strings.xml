@@ -4,4 +4,9 @@
     <string name="stations_country">Country</string>
     <string name="stations_codec">Codec</string>
     <string name="search_text">Search</string>
+    <string name="filter_title">Filter options</string>
+    <string name="filter_tags">Tags</string>
+    <string name="filter_countries">Countries</string>
+    <string name="filter_languages">Languages</string>
+    <string name="filter_tags_placeholder">Type in your favorite tags separated by comma</string>
 </resources>
