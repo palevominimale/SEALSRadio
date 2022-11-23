@@ -7,5 +7,5 @@ sealed interface MainUiState {
     object Splash : MainUiState
     data class Error (val code: Int? = null, val message: String? = null) : MainUiState
     data class Exception (val e: Throwable? = null) : MainUiState
-    data class StationListReady (val list: List<StationModel>? = null) : MainUiState
+    data class StationListReady (val list: List<StationModel>? = null, val filterIsShown: Boolean = false) : MainUiState
 }

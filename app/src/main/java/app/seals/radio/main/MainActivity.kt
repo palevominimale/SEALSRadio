@@ -6,16 +6,15 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
-import app.seals.radio.intents.PlayerIntent
 import app.seals.radio.player.BackgroundPlayerService
 import app.seals.radio.states.MainUiState
 import app.seals.radio.states.PlayerState
@@ -28,20 +27,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-private const val TAG = "MA_"
-
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
+
     private val vm by viewModel<MainActivityViewModel>()
     private var backgroundPlayService: BackgroundPlayerService? = null
     private var backgroundPlayerServiceState: StateFlow<Boolean>? = null
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            Log.d(TAG, "onServiceConnected()")
             if (service is BackgroundPlayerService.BackgroundServiceBinder){
                 if (service.getPlayingMediaID() != vm.playerState.value.station.stationuuid){
-                    Log.d(TAG, "mediaObj id has changed, play the new media")
                     backgroundPlayService = service.getService()
                     backgroundPlayService?.updatePlayer(vm.playerState.value.station)
                 }
@@ -50,7 +46,6 @@ class MainActivity : ComponentActivity() {
             }
         }
         override fun onServiceDisconnected(name: ComponentName?) {
-            Log.d(TAG, "onServiceDisconnected(); unbind service")
             backgroundPlayService?.stopSelf()
             unbindService(this)
         }
@@ -96,6 +91,8 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                val filterIsShown = mutableStateOf(false)
+
                 if(uiState.value is MainUiState.Splash) {
                     SplashScreen()
                 } else {
@@ -106,13 +103,16 @@ class MainActivity : ComponentActivity() {
                                 intent = it,
                                 backgroundPlayerServiceState = backgroundPlayerServiceState?.value ?: false) }
                         ) },
-                        bottomBar = { SearchBar() },
+                        bottomBar = { SearchBar(
+                            switchFilter = { filterIsShown.value = !filterIsShown.value }
+                        ) },
                         content = {
                             if (uiState.value is MainUiState.StationListReady) {
                                 MainScreen(
                                     list = (uiState.value as MainUiState.StationListReady).list!!,
                                     modifier = Modifier.padding(it),
-                                    vm = vm
+                                    vm = vm,
+                                    filterIsShown = filterIsShown.value
                                 )
                             } else {
                                 MainScreen(

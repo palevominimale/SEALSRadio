@@ -30,21 +30,8 @@ import app.seals.radio.ui.theme.Typography
 @Preview
 fun SearchBar(
     switchFilter: () -> Unit = {},
-    filterState: FilterUiState = FilterUiState.Hidden,
+    filterVisible: Boolean = false,
     modifier: Modifier = Modifier) {
-
-    val filterVisible = when (filterState) {
-        is FilterUiState.Hidden -> false
-        is FilterUiState.Shown -> true
-    }
-
-    AnimatedVisibility(
-        visible = filterVisible,
-        enter = slideInVertically(),
-        exit = slideOutVertically()
-    ) {
-        FilterPad()
-    }
 
     Surface(
         color = Color.White,

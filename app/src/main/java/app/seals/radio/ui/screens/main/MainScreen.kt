@@ -1,5 +1,12 @@
 package app.seals.radio.ui.screens.main
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.AnimationVector
+import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.TwoWayConverter
+import androidx.compose.animation.core.VectorizedFiniteAnimationSpec
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -17,7 +24,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import app.seals.radio.ui.theme.Typography
 import app.seals.radio.entities.responses.StationModel
 import coil.compose.AsyncImage
@@ -38,11 +47,12 @@ fun MainScreen(
         mutableListOf<StationModel?>().apply { repeat(10) { this.add(null) } },
     placeholders: Boolean = true,
     vm: MainActivityViewModel? = null,
+    filterIsShown: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-
     LazyColumn(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
     ) {
         list.forEachIndexed { _, model ->
             item {
@@ -50,6 +60,22 @@ fun MainScreen(
             }
         }
     }
+    Box(
+        contentAlignment = Alignment.BottomCenter,
+        modifier = modifier
+            .fillMaxSize()
+//            .zIndex(2f)
+    ) {
+        AnimatedVisibility(
+            visible = filterIsShown,
+            enter = slideInVertically(initialOffsetY = {2*it}),
+            exit = slideOutVertically(targetOffsetY = {it}),
+        ) {
+            FilterPad()
+        }
+    }
+
+
 }
 
 @Composable
