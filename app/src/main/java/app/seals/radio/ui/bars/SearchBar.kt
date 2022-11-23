@@ -1,12 +1,13 @@
-package app.seals.radio.ui.bars.search
+package app.seals.radio.ui.bars
 
-import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.Search
@@ -19,8 +20,10 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.seals.radio.R
@@ -30,8 +33,12 @@ import app.seals.radio.ui.theme.Typography
 @Preview
 fun SearchBar(
     switchFilter: () -> Unit = {},
+    searchUpdate: (String) -> Unit = {},
     filterVisible: Boolean = false,
-    modifier: Modifier = Modifier) {
+    modifier: Modifier = Modifier
+) {
+
+    val focusManager = LocalFocusManager.current
 
     Surface(
         color = Color.White,
@@ -68,7 +75,10 @@ fun SearchBar(
                     )
                 },
                 style = Typography.labelMedium,
-                textUpdate = {}
+                textUpdate = {
+                    searchUpdate(it)
+                    focusManager.clearFocus(true)
+                }
             )
             Icon(
                 imageVector = Icons.Default.Menu,
@@ -95,12 +105,12 @@ private fun CustomSearchField(
 
     var text by remember { mutableStateOf("") }
 
-    BasicTextField(modifier = modifier,
+    BasicTextField(
+        modifier = modifier,
         value = text,
         onValueChange = {
             text = it
-            textUpdate(it)
-                        },
+            },
         singleLine = true,
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
         textStyle = style,
@@ -119,6 +129,17 @@ private fun CustomSearchField(
                 }
                 if (trailingIcon != null) trailingIcon()
             }
-        }
+        },
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
+        keyboardActions = KeyboardActions(
+            onGo = {
+                textUpdate(text)
+            }
+        )
     )
+}
+
+@Composable
+private fun ClearFocus() {
+    LocalFocusManager.current.clearFocus(force = true)
 }

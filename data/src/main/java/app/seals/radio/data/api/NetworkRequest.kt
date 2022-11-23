@@ -43,4 +43,9 @@ class NetworkRequest(
             language = filter.language?.lowercase() ?: ""
         ) }
     }
+
+    suspend fun getListWithSearchByName() : ApiResult {
+        val search = prefs.getLastSearch()
+        return execute { retrofit.getListWithSearchByName(search) }
+    }
 }

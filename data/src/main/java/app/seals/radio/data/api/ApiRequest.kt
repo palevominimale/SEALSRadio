@@ -25,6 +25,12 @@ interface ApiRequest {
         @Query("limit") limit: Int = 50
     ): Call<List<StationModel>>
 
+    @GET("stations/search?")
+    fun getListWithSearchByName(
+        @Query("name") name: String,
+        @Query("limit") limit: Int = 50
+    ): Call<List<StationModel>>
+
     @GET("stations/bylanguage/{lang}")
     fun getListByLang(@Path("lang") lang: String): Call<List<StationModel>>
 

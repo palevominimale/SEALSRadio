@@ -1,32 +1,35 @@
 package app.seals.radio.di
 
-import app.seals.radio.domain.usecases.GetListWithFilterUseCase
-import app.seals.radio.domain.usecases.GetTopListUseCase
-import app.seals.radio.domain.usecases.SetFilterUseCase
-import app.seals.radio.domain.usecases.UnsetFilterUseCase
+import app.seals.radio.domain.usecases.*
 import org.koin.dsl.module
 
 val domainDi = module {
-    factory {
+    single {
         GetTopListUseCase(
             repo = get()
         )
     }
-    factory {
+    single {
         GetListWithFilterUseCase(
             repo = get()
         )
     }
 
-    factory {
+    single {
         SetFilterUseCase(
             filterControls = get()
         )
     }
 
-    factory {
+    single {
         UnsetFilterUseCase(
             filterControls = get()
+        )
+    }
+
+    single {
+        GetListBySearchUseCase(
+            repo = get()
         )
     }
 }

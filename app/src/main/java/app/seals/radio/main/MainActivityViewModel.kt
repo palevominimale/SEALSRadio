@@ -7,6 +7,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import app.seals.radio.data.preferences.SharedPrefsManager
 import app.seals.radio.domain.models.FilterOptions
+import app.seals.radio.domain.usecases.GetListBySearchUseCase
 import app.seals.radio.domain.usecases.GetListWithFilterUseCase
 import app.seals.radio.domain.usecases.GetTopListUseCase
 import app.seals.radio.states.MainUiState
@@ -25,6 +26,7 @@ import kotlinx.coroutines.launch
 class MainActivityViewModel(
     private val getTop: GetTopListUseCase,
     private val getByFilter: GetListWithFilterUseCase,
+    private val getBySearch: GetListBySearchUseCase,
     private val prefs: SharedPrefsManager
 ) : ViewModel() {
 
@@ -40,20 +42,19 @@ class MainActivityViewModel(
     private val scope = CoroutineScope(Dispatchers.IO)
 
     init {
+        Log.e("MAVM_", "init")
         filterOptions = prefs.getFilter()
+        Log.e("MAVM_filter", "$filterOptions")
         viewModelScope.launch {
             _apiState.collectLatest {
                 when(it) {
                     is ApiResult.ApiError -> {
-                        Log.e("MAVM_api_err", "$it")
                         _state.emit(MainUiState.Error(it.code, it.message))
                     }
                     is ApiResult.ApiException -> {
-                        Log.e("MAVM_api_exc", "$it")
                         _state.emit(MainUiState.Exception(it.e))
                     }
                     is ApiResult.ApiSuccess -> {
-                        Log.e("MAVM_api_scs", "$it")
                         if(it.data.isNotEmpty()) {
                             when(it.data[0]) {
                                 is StationModel -> {
@@ -66,15 +67,13 @@ class MainActivityViewModel(
                                         _currentStation.value = it.data[0] as StationModel
                                     }
                                     _state.emit(MainUiState.StationListReady(it.data as List<StationModel>))
-                                    Log.e("MAVM_state", "${it.data}")
                                 }
                                 else -> {
                                     _state.emit(MainUiState.IsLoading)
-                                    Log.e("MAVM_state_else", "${it.data}")
                                 }
                             }
                         } else {
-                            _state.emit(MainUiState.Error(666, "empty list"))
+                            _state.emit(MainUiState.Error(404, "Nothing has been found"))
                         }
                     }
                     else -> _state.emit(MainUiState.Splash)
@@ -132,6 +131,12 @@ class MainActivityViewModel(
         }
     }
 
+    fun search() {
+        scope.launch {
+            _apiState.emit(getBySearch.execute())
+        }
+    }
+
     fun setFilter(options: FilterOptions) {
         filterOptions = options
         Log.e("MAVM_", "$options")
@@ -143,6 +148,10 @@ class MainActivityViewModel(
         filterOptions = prefs.getFilter()
         Log.e("MAVM_", "$filterOptions")
         return filterOptions
+    }
+
+    fun setLastSearch(search: String) {
+        prefs.setLastSearch(search)
     }
 
     fun showFilter() {

@@ -39,9 +39,10 @@ import app.seals.radio.ui.theme.Typography
 fun FilterPad(
     hideFilter: () -> Unit = {},
     setFilter: (FilterOptions) -> Unit = {},
-    filterOptions: FilterOptions? = FilterOptions()
+    filterOptions: FilterOptions = FilterOptions()
 ) {
-    var newOptions = FilterOptions()
+    var newOptions = filterOptions
+
     Surface(
         color = Color.White,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
@@ -126,7 +127,7 @@ fun FilterPad(
                     .padding(vertical = 8.dp)
             )
             DropdownList(
-                text = filterOptions?.country,
+                text = newOptions.country,
                 items = listOf(
                     "France",
                     "Germany",
@@ -147,7 +148,7 @@ fun FilterPad(
                     .padding(vertical = 8.dp)
             )
             DropdownList(
-                text = filterOptions?.language,
+                text = newOptions.language,
                 items = listOf(
                     "French",
                     "German",
@@ -157,13 +158,14 @@ fun FilterPad(
                 onSelect = { newOptions = newOptions.copy(language = it) }
             )
             Text(
-                text = filterOptions?.tags ?: stringResource(R.string.filter_tags),
+                text = stringResource(R.string.filter_tags),
                 textAlign = TextAlign.Center,
                 style = Typography.labelMedium,
                 modifier = Modifier
                     .padding(vertical = 8.dp)
             )
             SearchTextField(
+                text = newOptions.tags,
                 modifier = Modifier
                     .padding(bottom = 16.dp),
                 onChange = { newOptions = newOptions.copy(tags = it) }
@@ -182,7 +184,7 @@ private fun DropdownList(
 ) {
 
     var expanded by remember { mutableStateOf(false) }
-    var selectedText by remember { mutableStateOf("") }
+    var selectedText by remember { mutableStateOf(text ?: "") }
     var textFieldSize by remember { mutableStateOf(Size.Zero) }
 
     val icon =
@@ -202,10 +204,11 @@ private fun DropdownList(
                 .onGloballyPositioned {
                     textFieldSize = it.size.toSize()
                 },
-                readOnly = true,
+                readOnly = false,
                 value = selectedText,
                 onValueChange = {
                     selectedText = it
+                    onSelect(it)
                     },
                 singleLine = true,
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
@@ -256,11 +259,12 @@ private fun DropdownList(
 
 @Composable
 private fun SearchTextField(
+    text: String?,
     modifier: Modifier = Modifier,
     style: TextStyle = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Light),
     onChange: (String) -> Unit = {}
 ) {
-    var value by remember { mutableStateOf("") }
+    var value by remember { mutableStateOf(text ?: "") }
 
     Surface(
         shape = RoundedCornerShape(10.dp),

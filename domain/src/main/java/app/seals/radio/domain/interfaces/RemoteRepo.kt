@@ -6,4 +6,5 @@ interface RemoteRepo {
     suspend fun getTopList() : ApiResult
     suspend fun getTopList(num: Int) : ApiResult
     suspend fun getListWithFilter() : ApiResult
+    suspend fun getListWithSearchByName() : ApiResult
 }

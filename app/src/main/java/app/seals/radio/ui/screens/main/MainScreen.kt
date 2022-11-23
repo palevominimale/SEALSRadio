@@ -1,10 +1,6 @@
 package app.seals.radio.ui.screens.main
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.AnimationVector
-import androidx.compose.animation.core.FiniteAnimationSpec
-import androidx.compose.animation.core.TwoWayConverter
-import androidx.compose.animation.core.VectorizedFiniteAnimationSpec
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
@@ -24,9 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import app.seals.radio.ui.theme.Typography
 import app.seals.radio.entities.responses.StationModel
 import coil.compose.AsyncImage
@@ -48,9 +42,9 @@ fun MainScreen(
         mutableListOf<StationModel?>().apply { repeat(10) { this.add(null) } },
     placeholders: Boolean = true,
     vm: MainActivityViewModel? = null,
-    filterIsShown: Boolean = true,
     modifier: Modifier = Modifier
 ) {
+    val filterIsShown = vm?.filterState?.collectAsState()
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -67,14 +61,14 @@ fun MainScreen(
             .fillMaxSize()
     ) {
         AnimatedVisibility(
-            visible = filterIsShown,
+            visible = filterIsShown?.value ?: false,
             enter = slideInVertically(initialOffsetY = {2*it}),
             exit = slideOutVertically(targetOffsetY = {it}),
         ) {
             FilterPad(
                 hideFilter = { vm?.hideFilter() },
                 setFilter = { vm?.setFilter(it) },
-                filterOptions = vm?.getFilter()
+                filterOptions = vm?.getFilter() ?: FilterOptions()
             )
         }
     }

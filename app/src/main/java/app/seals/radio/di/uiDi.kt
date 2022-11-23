@@ -9,7 +9,8 @@ val uiDi = module {
         MainActivityViewModel(
             getTop = get(),
             getByFilter = get(),
-            prefs = get()
+            prefs = get(),
+            getBySearch = get()
         )
     }
 }

@@ -9,4 +9,5 @@
     <string name="filter_countries">Countries</string>
     <string name="filter_languages">Languages</string>
     <string name="filter_tags_placeholder">Type in your favorite tags separated by comma</string>
+    <string name="exception_title">Unfortunately, we have an error</string>
 </resources>

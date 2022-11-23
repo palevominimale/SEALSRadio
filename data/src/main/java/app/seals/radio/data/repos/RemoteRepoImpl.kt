@@ -22,4 +22,8 @@ class RemoteRepoImpl(
         return request.getListWithFilter()
     }
 
+    override suspend fun getListWithSearchByName() : ApiResult {
+        return request.getListWithSearchByName()
+    }
+
 }

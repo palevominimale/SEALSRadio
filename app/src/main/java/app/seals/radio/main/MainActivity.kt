@@ -12,14 +12,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import app.seals.radio.player.BackgroundPlayerService
 import app.seals.radio.states.MainUiState
 import app.seals.radio.states.PlayerState
 import app.seals.radio.ui.bars.PlayerBar
-import app.seals.radio.ui.bars.search.SearchBar
+import app.seals.radio.ui.bars.SearchBar
+import app.seals.radio.ui.screens.ExceptionScreen
 import app.seals.radio.ui.screens.main.MainScreen
 import app.seals.radio.ui.screens.splash.SplashScreen
 import app.seals.radio.ui.theme.SEALSRadioTheme
@@ -91,8 +91,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                val filterIsShown = vm.filterState.collectAsState()
-
                 if(uiState.value is MainUiState.Splash) {
                     SplashScreen()
                 } else {
@@ -104,23 +102,49 @@ class MainActivity : ComponentActivity() {
                                 backgroundPlayerServiceState = backgroundPlayerServiceState?.value ?: false) }
                         ) },
                         bottomBar = { SearchBar(
-                            switchFilter = { if(vm.filterState.value) vm.hideFilter() else vm.showFilter() }
+                            switchFilter = { if(vm.filterState.value) vm.hideFilter() else vm.showFilter() },
+                            searchUpdate = {
+                                vm.setLastSearch(it)
+                                vm.search()
+                            }
                         ) },
                         content = {
-                            if (uiState.value is MainUiState.StationListReady) {
-                                if((uiState.value as MainUiState.StationListReady).list!!.isNotEmpty()) {
-                                    MainScreen(
-                                        list = (uiState.value as MainUiState.StationListReady).list!!,
-                                        modifier = Modifier.padding(it),
-                                        vm = vm,
-                                        filterIsShown = filterIsShown.value
+                            when(uiState.value) {
+                                is MainUiState.StationListReady -> {
+                                    if((uiState.value as MainUiState.StationListReady).list!!.isNotEmpty()) {
+                                        MainScreen(
+                                            list = (uiState.value as MainUiState.StationListReady).list!!,
+                                            modifier = Modifier.padding(it),
+                                            vm = vm,
+                                        )
+                                    } else {
+                                        MainScreen(
+                                            list = emptyList(),
+                                            modifier = Modifier.padding(it),
+                                            vm = vm
+                                        )
+                                    }
+                                }
+                                is MainUiState.Error -> {
+                                    val state = uiState.value as MainUiState.Error
+                                    ExceptionScreen(
+                                        code = state.code,
+                                        message = state.message
                                     )
                                 }
-                            } else {
-                                MainScreen(
-                                    modifier = Modifier.padding(it),
-                                    vm = vm
-                                )
+                                is MainUiState.Exception -> {
+                                    val state = uiState.value as MainUiState.Exception
+                                    ExceptionScreen(
+                                        t = state.e
+                                    )
+                                }
+                                is MainUiState.IsLoading -> {
+                                    MainScreen(
+                                        modifier = Modifier.padding(it),
+                                        vm = vm
+                                    )
+                                }
+                                else -> {}
                             }
                         }
                     )

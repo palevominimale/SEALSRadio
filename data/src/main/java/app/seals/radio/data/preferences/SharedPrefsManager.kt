@@ -1,7 +1,6 @@
 package app.seals.radio.data.preferences
 
 import android.content.Context
-import android.util.Log
 import app.seals.radio.data.R
 import app.seals.radio.domain.models.FilterOptions
 import com.google.gson.Gson
@@ -21,7 +20,15 @@ class SharedPrefsManager(
 
     fun getFilter() : FilterOptions {
         val filter = sharedPreference.getString("filter", "")
-        Log.e("SPM_", "$filter \n${gson.fromJson(filter, FilterOptions::class.java)}" )
         return gson.fromJson(filter, FilterOptions::class.java)
+    }
+
+    fun setLastSearch(search: String) {
+        editor.putString("last_search", search)
+        editor.commit()
+    }
+
+    fun getLastSearch() : String {
+        return sharedPreference.getString("last_search", "") ?: ""
     }
 }
