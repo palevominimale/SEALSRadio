@@ -6,9 +6,11 @@ import androidx.lifecycle.viewModelScope
 import app.seals.radio.data.preferences.SharedPrefsManager
 import app.seals.radio.domain.interfaces.LocalRepo
 import app.seals.radio.domain.models.FilterOptions
-import app.seals.radio.domain.usecases.GetListBySearchUseCase
-import app.seals.radio.domain.usecases.GetListWithFilterUseCase
-import app.seals.radio.domain.usecases.GetTopListUseCase
+import app.seals.radio.domain.usecases.api_ops.GetListBySearchUseCase
+import app.seals.radio.domain.usecases.api_ops.GetListWithFilterUseCase
+import app.seals.radio.domain.usecases.api_ops.GetTopListUseCase
+import app.seals.radio.domain.usecases.local_storage.CurrentListUseCase
+import app.seals.radio.domain.usecases.local_storage.FavoriteListUseCase
 import app.seals.radio.states.MainUiState
 import app.seals.radio.entities.api.ApiResult
 import app.seals.radio.entities.responses.StationModel
@@ -29,7 +31,8 @@ class MainActivityViewModel(
     private val getByFilter: GetListWithFilterUseCase,
     private val getBySearch: GetListBySearchUseCase,
     private val prefs: SharedPrefsManager,
-    private val localRepo: LocalRepo
+    private val current: CurrentListUseCase,
+    private val favorite: FavoriteListUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<MainUiState>(MainUiState.Splash)
@@ -58,8 +61,8 @@ class MainActivityViewModel(
                         if(it.data.isNotEmpty()) {
                             when(it.data[0]) {
                                 is StationModel -> {
-                                    localRepo.clearCurrentList()
-                                    localRepo.saveCurrentList(it.data as List<StationModel>)
+                                    current.clear()
+                                    current.set(it.data as List<StationModel>)
                                     if(_currentStation.value.url == null) {
                                         if(_pState.value is PlayerState.IsStopped) {
                                             _pState.emit(PlayerState.IsStopped(it.data[0] as StationModel))
@@ -107,7 +110,7 @@ class MainActivityViewModel(
 
     fun getCurrentSavedList() {
         viewModelScope.launch {
-            _apiState.emit(ApiResult.ApiSuccess(localRepo.loadCurrentList()))
+            _apiState.emit(ApiResult.ApiSuccess(current.get()))
         }
     }
 
@@ -171,15 +174,15 @@ class MainActivityViewModel(
     }
 
     fun getFavorites() : List<StationModel> {
-        return localRepo.loadFavoritesList()
+        return favorite.getList()
     }
 
     fun getCurrentList() : List<StationModel> {
-        return localRepo.loadCurrentList()
+        return current.get()
     }
 
     fun getFavoritesUuids() : List<String> {
-        val favorites = localRepo.loadFavoritesList()
+        val favorites = favorite.getList()
         val list = mutableListOf<String>().apply {
             favorites.forEach {
                 if (it.stationuuid != null) {
@@ -190,12 +193,12 @@ class MainActivityViewModel(
         return list
     }
 
-    fun addFavorite(station: StationModel = StationModel()) {
-        localRepo.saveFavorite(station)
+    fun addFavorite(station: StationModel) {
+        favorite.add(station)
     }
 
     fun delFavorite(uuid: String) {
-        localRepo.deleteFavorite(uuid)
+        favorite.delete(uuid)
     }
 
     private fun getByFilter() {

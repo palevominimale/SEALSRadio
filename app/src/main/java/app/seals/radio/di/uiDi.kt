@@ -11,7 +11,8 @@ val uiDi = module {
             getByFilter = get(),
             prefs = get(),
             getBySearch = get(),
-            localRepo = get()
+            favorite = get(),
+            current = get()
         )
     }
 }

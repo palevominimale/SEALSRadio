@@ -1,13 +1,12 @@
-package app.seals.radio.domain.usecases
+package app.seals.radio.domain.usecases.api_ops
 
 import app.seals.radio.domain.interfaces.RemoteRepo
-import app.seals.radio.domain.models.FilterOptions
 import app.seals.radio.entities.api.ApiResult
 
-class GetListWithFilterUseCase(
+class GetTopListUseCase(
     private val repo: RemoteRepo
 ) {
     suspend fun execute() : ApiResult {
-        return repo.getListWithFilter()
+        return repo.getTopList()
     }
 }

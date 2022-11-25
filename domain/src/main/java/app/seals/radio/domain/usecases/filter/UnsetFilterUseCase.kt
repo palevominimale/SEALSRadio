@@ -1,4 +1,4 @@
-package app.seals.radio.domain.usecases
+package app.seals.radio.domain.usecases.filter
 
 import app.seals.radio.domain.interfaces.FilterControls
 
