@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        vm.getTop()
+        vm.getCurrentSavedList()
         setContent {
             val uiState = vm.uiState.collectAsState()
             val playerState = vm.playerState.collectAsState()

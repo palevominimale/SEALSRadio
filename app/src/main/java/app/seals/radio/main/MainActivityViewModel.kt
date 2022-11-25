@@ -1,6 +1,5 @@
 package app.seals.radio.main
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -59,6 +58,8 @@ class MainActivityViewModel(
                         if(it.data.isNotEmpty()) {
                             when(it.data[0]) {
                                 is StationModel -> {
+                                    localRepo.clearCurrentList()
+                                    localRepo.saveCurrentList(it.data as List<StationModel>)
                                     if(_currentStation.value.url == null) {
                                         if(_pState.value is PlayerState.IsStopped) {
                                             _pState.emit(PlayerState.IsStopped(it.data[0] as StationModel))
@@ -98,9 +99,15 @@ class MainActivityViewModel(
         }
     }
 
-    fun getTop() {
+    fun getTopList() {
         scope.launch {
             _apiState.emit(getTop.execute())
+        }
+    }
+
+    fun getCurrentSavedList() {
+        viewModelScope.launch {
+            _apiState.emit(ApiResult.ApiSuccess(localRepo.loadCurrentList()))
         }
     }
 
