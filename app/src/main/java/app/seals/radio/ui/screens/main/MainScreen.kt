@@ -25,7 +25,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import app.seals.radio.ui.theme.Typography
 import app.seals.radio.entities.responses.StationModel
 import coil.compose.AsyncImage
@@ -49,7 +48,7 @@ fun MainScreen(
     vm: MainActivityViewModel? = null,
     modifier: Modifier = Modifier
 ) {
-    val favoriteList : List<String> = vm?.getFavorites() ?: emptyList()
+    val favoriteList : List<String> = vm?.getFavoritesUuids() ?: emptyList()
     val filterIsShown = vm?.filterState?.collectAsState()
     LazyColumn(
         modifier = modifier
@@ -91,7 +90,7 @@ private fun StationItem(
     model : StationModel? = null,
     onClick: (item: StationModel) -> Unit,
     isFavorite: Boolean = false,
-    addFavorite: (String) -> Unit = {},
+    addFavorite: (StationModel) -> Unit = {},
     delFavorite: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -218,12 +217,12 @@ private fun StationItem(
                     contentDescription = null,
                     tint = if(fav.value) Color.Red else Color.LightGray,
                     modifier = Modifier
-                        .size(30.dp)
                         .padding(bottom = 8.dp)
+                        .size(24.dp)
                         .clip(CircleShape)
                         .clickable {
                             if(isFavorite && model?.stationuuid != null) delFavorite(model.stationuuid!!)
-                            else if(model?.stationuuid != null) addFavorite(model.stationuuid!!)
+                            else if(model?.stationuuid != null) addFavorite(model)
                             fav.value = !fav.value
                         }
                         .placeholder(
@@ -239,6 +238,7 @@ private fun StationItem(
                     tint = Color.LightGray,
                     modifier = Modifier
                         .size(30.dp)
+                        .clip(CircleShape)
                         .placeholder(
                             visible = placeholderState,
                             color = Color.LightGray,

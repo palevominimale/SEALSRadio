@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.seals.radio.data.preferences.SharedPrefsManager
+import app.seals.radio.domain.interfaces.LocalRepo
 import app.seals.radio.domain.models.FilterOptions
 import app.seals.radio.domain.usecases.GetListBySearchUseCase
 import app.seals.radio.domain.usecases.GetListWithFilterUseCase
@@ -21,12 +22,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+private const val TAG = "MAVM_"
+
 @Suppress("UNCHECKED_CAST")
 class MainActivityViewModel(
     private val getTop: GetTopListUseCase,
     private val getByFilter: GetListWithFilterUseCase,
     private val getBySearch: GetListBySearchUseCase,
-    private val prefs: SharedPrefsManager
+    private val prefs: SharedPrefsManager,
+    private val localRepo: LocalRepo
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<MainUiState>(MainUiState.Splash)
@@ -41,9 +45,7 @@ class MainActivityViewModel(
     private val scope = CoroutineScope(Dispatchers.IO)
 
     init {
-        Log.e("MAVM_", "init")
         filterOptions = prefs.getFilter()
-        Log.e("MAVM_filter", "$filterOptions")
         viewModelScope.launch {
             _apiState.collectLatest {
                 when(it) {
@@ -83,7 +85,6 @@ class MainActivityViewModel(
 
     fun playerIntent(intent: PlayerIntent, backgroundPlayerServiceState: Boolean) {
         viewModelScope.launch {
-            Log.e("MAVM_player_intent", "$intent")
             when(intent) {
                 is PlayerIntent.Play -> {
                     if(!backgroundPlayerServiceState) play()
@@ -115,7 +116,6 @@ class MainActivityViewModel(
                 }
             }
         }
-        Log.e("MAVM_", "${station.name} ${station.urlResolved} ")
     }
 
     fun play() {
@@ -138,14 +138,12 @@ class MainActivityViewModel(
 
     fun setFilter(options: FilterOptions) {
         filterOptions = options
-        Log.e("MAVM_", "$options")
         prefs.setFilter(options)
         getByFilter()
     }
 
     fun getFilter() : FilterOptions {
         filterOptions = prefs.getFilter()
-        Log.e("MAVM_", "$filterOptions")
         return filterOptions
     }
 
@@ -165,16 +163,32 @@ class MainActivityViewModel(
         }
     }
 
-    fun getFavorites() : List<String> {
-        return prefs.getFavorites()
+    fun getFavorites() : List<StationModel> {
+        return localRepo.loadFavoritesList()
     }
 
-    fun addFavorite(uuid: String) {
-        prefs.addFavorite(uuid)
+    fun getCurrentList() : List<StationModel> {
+        return localRepo.loadCurrentList()
+    }
+
+    fun getFavoritesUuids() : List<String> {
+        val favorites = localRepo.loadFavoritesList()
+        val list = mutableListOf<String>().apply {
+            favorites.forEach {
+                if (it.stationuuid != null) {
+                    add(it.stationuuid!!)
+                }
+            }
+        }.toList()
+        return list
+    }
+
+    fun addFavorite(station: StationModel = StationModel()) {
+        localRepo.saveFavorite(station)
     }
 
     fun delFavorite(uuid: String) {
-        prefs.delFavorite(uuid)
+        localRepo.deleteFavorite(uuid)
     }
 
     private fun getByFilter() {

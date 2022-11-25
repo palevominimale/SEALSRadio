@@ -10,7 +10,8 @@ val uiDi = module {
             getTop = get(),
             getByFilter = get(),
             prefs = get(),
-            getBySearch = get()
+            getBySearch = get(),
+            localRepo = get()
         )
     }
 }
