@@ -61,6 +61,7 @@ dependencies {
     implementation "com.google.accompanist:accompanist-swiperefresh:$accompanist"
     implementation "com.google.accompanist:accompanist-placeholder:$accompanist"
     implementation "com.google.accompanist:accompanist-pager:$accompanist"
+    implementation "com.google.accompanist:accompanist-pager-indicators:$accompanist"
 
     //AndroidX
     implementation 'androidx.core:core-ktx:1.9.0'

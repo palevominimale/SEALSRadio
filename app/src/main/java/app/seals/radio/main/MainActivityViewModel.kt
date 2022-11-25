@@ -128,11 +128,9 @@ class MainActivityViewModel(
                         }
                     }
                 }
-                is MainIntent.ShowFavorites -> _state.emit(UiState.Ready.Favorites(
-                    list = favorite.getList()
-                ))
                 is MainIntent.HideFilter -> _state.emit(UiState.Ready.Main(
                     list = current.get(),
+                    favs = favorite.getList(),
                     filterOptions = prefs.getFilter(),
                     filterIsShown = false
                 ))
@@ -146,9 +144,26 @@ class MainActivityViewModel(
                     filterOptions = prefs.getFilter(),
                     filterIsShown = false
                 ))
-                is MainIntent.AddFavorite -> favorite.add(intent.options)
-                is MainIntent.DelFavorite -> favorite.delete(intent.options)
+                is MainIntent.AddFavorite -> {
+                    favorite.add(intent.options)
+                    _state.emit(UiState.Ready.Main(
+                        list = current.get(),
+                        favs = favorite.getList(),
+                        filterOptions = prefs.getFilter(),
+                        filterIsShown = false
+                    ))
+                }
+                is MainIntent.DelFavorite -> {
+                    favorite.delete(intent.options)
+                    _state.emit(UiState.Ready.Main(
+                        list = current.get(),
+                        favs = favorite.getList(),
+                        filterOptions = prefs.getFilter(),
+                        filterIsShown = false
+                    ))
+                }
                 is MainIntent.Select -> selectStation(intent.options)
+                is MainIntent.ShowFavorites -> {}
             }
         }
     }

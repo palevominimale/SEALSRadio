@@ -23,11 +23,6 @@ sealed interface UiState {
             val filterIsShown: Boolean = false,
             val filterOptions: FilterOptions? = null
         ) : Ready
-
-        data class Favorites(
-            val list: List<StationModel> = emptyList()
-        ) : Ready
-
         object Empty : Ready
     }
 }
