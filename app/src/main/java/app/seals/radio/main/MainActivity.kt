@@ -14,9 +14,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
+import app.seals.radio.intents.MainIntent
 import app.seals.radio.player.BackgroundPlayerService
-import app.seals.radio.states.MainUiState
 import app.seals.radio.states.PlayerState
+import app.seals.radio.states.UiState
 import app.seals.radio.ui.bars.PlayerBar
 import app.seals.radio.ui.bars.SearchBar
 import app.seals.radio.ui.screens.ExceptionScreen
@@ -91,57 +92,55 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                if(uiState.value is MainUiState.Splash) {
+                if(uiState.value is UiState.Splash) {
                     SplashScreen()
                 } else {
                     Scaffold(
                         topBar = { PlayerBar(
                             state = playerState.value,
-                            onIntent = { vm.playerIntent(
+                            onIntent = { vm.intent(
                                 intent = it,
                                 backgroundPlayerServiceState = backgroundPlayerServiceState?.value ?: false) }
                         ) },
                         bottomBar = { SearchBar(
-                            switchFilter = { if(vm.filterState.value) vm.hideFilter() else vm.showFilter() },
+                            switchFilter = {
+                                if((uiState.value as UiState.Ready.Main).filterIsShown) {
+                                    vm.intent(MainIntent.HideFilter, backgroundPlayerServiceState!!.value)
+                                } else {
+                                    vm.intent(MainIntent.ShowFilter, backgroundPlayerServiceState!!.value)
+                                }
+                               },
                             searchUpdate = {
-                                vm.setLastSearch(it)
-                                vm.search()
+                                vm.intent(MainIntent.Search(it), backgroundPlayerServiceState!!.value)
                             }
                         ) },
                         content = {
                             when(uiState.value) {
-                                is MainUiState.StationListReady -> {
-                                    if((uiState.value as MainUiState.StationListReady).list!!.isNotEmpty()) {
-                                        MainScreen(
-                                            list = (uiState.value as MainUiState.StationListReady).list!!,
-                                            modifier = Modifier.padding(it),
-                                            vm = vm,
-                                        )
-                                    } else {
-                                        MainScreen(
-                                            list = emptyList(),
-                                            modifier = Modifier.padding(it),
-                                            vm = vm
-                                        )
-                                    }
+                                is UiState.Ready -> {
+                                    MainScreen(
+                                        state = uiState.value as UiState.Ready,
+                                        modifier = Modifier.padding(it),
+                                        intent = {  intent ->
+                                            vm.intent(intent, backgroundPlayerServiceState!!.value)
+                                        }
+                                    )
                                 }
-                                is MainUiState.Error -> {
-                                    val state = uiState.value as MainUiState.Error
+                                is UiState.Error -> {
+                                    val state = uiState.value as UiState.Error
                                     ExceptionScreen(
                                         code = state.code,
                                         message = state.message
                                     )
                                 }
-                                is MainUiState.Exception -> {
-                                    val state = uiState.value as MainUiState.Exception
+                                is UiState.Exception -> {
+                                    val state = uiState.value as UiState.Exception
                                     ExceptionScreen(
                                         t = state.e
                                     )
                                 }
-                                is MainUiState.IsLoading -> {
+                                is UiState.IsLoading -> {
                                     MainScreen(
-                                        modifier = Modifier.padding(it),
-                                        vm = vm
+                                        modifier = Modifier.padding(it)
                                     )
                                 }
                                 else -> {}

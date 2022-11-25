@@ -3,7 +3,6 @@ package app.seals.radio.ui.screens.main
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -14,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,25 +34,37 @@ import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
 import app.seals.radio.R
 import app.seals.radio.domain.models.FilterOptions
-import app.seals.radio.main.MainActivityViewModel
+import app.seals.radio.intents.MainIntent
+import app.seals.radio.states.UiState
 import coil.compose.AsyncImagePainter
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 
-@OptIn(ExperimentalPagerApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 @Preview
 fun MainScreen(
-    list: List<StationModel?> =
-        mutableListOf<StationModel?>().apply { repeat(10) { this.add(null) } },
-    placeholders: Boolean = true,
-    vm: MainActivityViewModel? = null,
-    modifier: Modifier = Modifier
+    state: UiState.Ready = UiState.Ready.Empty,
+    modifier: Modifier = Modifier,
+    intent: (MainIntent) -> Unit = {}
 ) {
-    val favoriteList : List<String> = vm?.getFavoritesUuids() ?: emptyList()
-    val filterIsShown = vm?.filterState?.collectAsState()
+
+    val list = mutableListOf<StationModel>()
+    val favs = mutableListOf<StationModel>()
+
+    when(state) {
+        is UiState.Ready.Empty -> list.addAll(emptyList())
+        is UiState.Ready.Main -> {
+            list.addAll(state.list)
+            favs.addAll(state.favs)
+        }
+        is UiState.Ready.Favorites -> {
+            favs.addAll(state.list)
+        }
+    }
+    val filterIsShown = (state as UiState.Ready.Main).filterIsShown
 
     HorizontalPager(count = 2) { page ->
         when(page) {
@@ -67,10 +77,10 @@ fun MainScreen(
                         item {
                             StationItem(
                                 model = model,
-                                onClick = { vm!!.selectStation(it) },
-                                isFavorite = favoriteList.contains(model?.stationuuid ?: false),
-                                addFavorite = { vm?.addFavorite(it) },
-                                delFavorite = { vm?.delFavorite(it) }
+                                onClick = { intent(MainIntent.Select(it)) },
+                                isFavorite = favs.contains(model.stationuuid ?: false),
+                                addFavorite = { intent(MainIntent.AddFavorite(it)) },
+                                delFavorite = { intent(MainIntent.DelFavorite(it)) }
                             )
                         }
                     }
@@ -81,14 +91,14 @@ fun MainScreen(
                     modifier = modifier
                         .fillMaxSize()
                 ) {
-                    vm!!.getFavorites().forEachIndexed { _, model ->
+                    favs.forEachIndexed { _, model ->
                         item {
                             StationItem(
                                 model = model,
-                                onClick = { vm.selectStation(it) },
-                                isFavorite = favoriteList.contains(model.stationuuid ?: false),
-                                addFavorite = { vm.addFavorite(it) },
-                                delFavorite = { vm.delFavorite(it) }
+                                onClick = { intent(MainIntent.Select(it)) },
+                                isFavorite = favs.contains(model.stationuuid ?: false),
+                                addFavorite = { intent(MainIntent.AddFavorite(it)) },
+                                delFavorite = { intent(MainIntent.DelFavorite(it)) }
                             )
                         }
                     }
@@ -103,14 +113,14 @@ fun MainScreen(
             .fillMaxSize()
     ) {
         AnimatedVisibility(
-            visible = filterIsShown?.value ?: false,
+            visible = filterIsShown,
             enter = slideInVertically(initialOffsetY = {2*it}),
             exit = slideOutVertically(targetOffsetY = {it}),
         ) {
             FilterPad(
-                hideFilter = { vm?.hideFilter() },
-                setFilter = { vm?.setFilter(it) },
-                filterOptions = vm?.getFilter() ?: FilterOptions()
+                hideFilter = { intent(MainIntent.HideFilter) },
+                setFilter = { intent(MainIntent.SetFilter(it)) },
+                filterOptions = state.filterOptions ?: FilterOptions()
             )
         }
     }
@@ -157,7 +167,7 @@ fun StationItem(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column {
-                    var placeholderState by remember { mutableStateOf(true) }
+                    var phState by remember { mutableStateOf(true) }
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .memoryCachePolicy(CachePolicy.ENABLED)
@@ -174,15 +184,15 @@ fun StationItem(
                             .size(80.dp)
                             .clip(RoundedCornerShape(16.dp))
                             .placeholder(
-                                visible = placeholderState,
+                                visible = phState,
                                 color = Color.LightGray,
                                 shape = RoundedCornerShape(16.dp),
                                 highlight = highlight
                             ),
                         onState = {
-                            if(it is AsyncImagePainter.State.Success) placeholderState = false
+                            if(it is AsyncImagePainter.State.Success) phState = false
                             if(it is AsyncImagePainter.State.Error) {
-                                placeholderState = false
+                                phState = false
                             }
                         }
                     )

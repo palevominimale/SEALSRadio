@@ -4,18 +4,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.seals.radio.data.preferences.SharedPrefsManager
-import app.seals.radio.domain.interfaces.LocalRepo
 import app.seals.radio.domain.models.FilterOptions
 import app.seals.radio.domain.usecases.api_ops.GetListBySearchUseCase
 import app.seals.radio.domain.usecases.api_ops.GetListWithFilterUseCase
 import app.seals.radio.domain.usecases.api_ops.GetTopListUseCase
 import app.seals.radio.domain.usecases.local_storage.CurrentListUseCase
 import app.seals.radio.domain.usecases.local_storage.FavoriteListUseCase
-import app.seals.radio.states.MainUiState
 import app.seals.radio.entities.api.ApiResult
 import app.seals.radio.entities.responses.StationModel
-import app.seals.radio.intents.PlayerIntent
+import app.seals.radio.intents.MainIntent
 import app.seals.radio.states.PlayerState
+import app.seals.radio.states.UiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,13 +34,11 @@ class MainActivityViewModel(
     private val favorite: FavoriteListUseCase
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow<MainUiState>(MainUiState.Splash)
+    private val _state = MutableStateFlow<UiState>(UiState.Splash)
     private val _pState = MutableStateFlow<PlayerState>(PlayerState.IsStopped(StationModel()))
-    private val _fState = MutableStateFlow(false)
-    private val _apiState = MutableStateFlow<ApiResult?>(null)
+    private val _apiState = MutableStateFlow<ApiResult>(ApiResult.ApiSuccess(emptyList()))
     private val _currentStation = mutableStateOf(StationModel())
-    val uiState get() = _state as StateFlow<MainUiState>
-    val filterState get() = _fState as StateFlow<Boolean>
+    val uiState get() = _state as StateFlow<UiState>
     val playerState get() = _pState as StateFlow<PlayerState>
     private var filterOptions = FilterOptions()
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -52,10 +49,10 @@ class MainActivityViewModel(
             _apiState.collectLatest {
                 when(it) {
                     is ApiResult.ApiError -> {
-                        _state.emit(MainUiState.Error(it.code, it.message))
+                        _state.emit(UiState.Error(it.code, it.message))
                     }
                     is ApiResult.ApiException -> {
-                        _state.emit(MainUiState.Exception(it.e))
+                        _state.emit(UiState.Exception(it.e))
                     }
                     is ApiResult.ApiSuccess -> {
                         if(it.data.isNotEmpty()) {
@@ -71,40 +68,88 @@ class MainActivityViewModel(
                                         }
                                         _currentStation.value = it.data[0] as StationModel
                                     }
-                                    _state.emit(MainUiState.StationListReady(it.data as List<StationModel>))
+                                    _state.emit(UiState.Ready.Main(
+                                        list = it.data as List<StationModel>,
+                                        favs = favorite.getList(),
+                                        filterIsShown = false,
+                                        filterOptions = prefs.getFilter()
+                                    ))
                                 }
                                 else -> {
-                                    _state.emit(MainUiState.IsLoading)
+                                    _state.emit(UiState.Ready.Empty)
                                 }
                             }
                         } else {
-                            _state.emit(MainUiState.Error(404, "Nothing has been found"))
+                            _state.emit(UiState.Ready.Empty)
                         }
                     }
-                    else -> _state.emit(MainUiState.Splash)
                 }
             }
         }
     }
 
-    fun playerIntent(intent: PlayerIntent, backgroundPlayerServiceState: Boolean) {
+    fun intent(intent: MainIntent, backgroundPlayerServiceState: Boolean) {
         viewModelScope.launch {
             when(intent) {
-                is PlayerIntent.Play -> {
-                    if(!backgroundPlayerServiceState) play()
+                is MainIntent.Play -> {
+                    if(!backgroundPlayerServiceState) {
+                        viewModelScope.launch {
+                            _pState.emit(PlayerState.IsPlaying(_currentStation.value))
+                        }
+                    }
                 }
-                is PlayerIntent.Stop -> {
-                    if(backgroundPlayerServiceState) pause()
+                is MainIntent.Stop -> {
+                    if(backgroundPlayerServiceState) {
+                        viewModelScope.launch {
+                            _pState.emit(PlayerState.IsStopped(_currentStation.value))
+                        }
+                    }
                 }
-                is PlayerIntent.Next -> {}
-                is PlayerIntent.Previous -> {}
-            }
-        }
-    }
+                is MainIntent.Next -> {}
+                is MainIntent.Previous -> {}
+                is MainIntent.Search -> {
+                    prefs.setLastSearch(intent.options)
+                    scope.launch {
+                        _apiState.emit(getBySearch.execute())
+                    }
+                }
+                is MainIntent.SetFilter -> {
+                    prefs.setFilter(intent.options)
 
-    fun getTopList() {
-        scope.launch {
-            _apiState.emit(getTop.execute())
+                    scope.launch {
+                        _apiState.emit(getByFilter.execute())
+                    }.invokeOnCompletion {
+                        this.launch {
+                            _state.emit(UiState.Ready.Main(
+                                list = current.get(),
+                                filterOptions = prefs.getFilter(),
+                                filterIsShown = false
+                            ))
+                        }
+                    }
+                }
+                is MainIntent.ShowFavorites -> _state.emit(UiState.Ready.Favorites(
+                    list = favorite.getList()
+                ))
+                is MainIntent.HideFilter -> _state.emit(UiState.Ready.Main(
+                    list = current.get(),
+                    filterOptions = prefs.getFilter(),
+                    filterIsShown = false
+                ))
+                is MainIntent.ShowFilter -> _state.emit(UiState.Ready.Main(
+                    list = current.get(),
+                    filterOptions = prefs.getFilter(),
+                    filterIsShown = true
+                ))
+                is MainIntent.ShowMain -> _state.emit(UiState.Ready.Main(
+                    list = current.get(),
+                    filterOptions = prefs.getFilter(),
+                    filterIsShown = false
+                ))
+                is MainIntent.AddFavorite -> favorite.add(intent.options)
+                is MainIntent.DelFavorite -> favorite.delete(intent.options)
+                is MainIntent.Select -> selectStation(intent.options)
+            }
         }
     }
 
@@ -114,7 +159,7 @@ class MainActivityViewModel(
         }
     }
 
-    fun selectStation(station: StationModel) {
+    private fun selectStation(station: StationModel) {
         _currentStation.value = station
         viewModelScope.launch {
             when(_pState.value) {
@@ -137,73 +182,6 @@ class MainActivityViewModel(
     fun pause() {
         viewModelScope.launch {
             _pState.emit(PlayerState.IsStopped(_currentStation.value))
-        }
-    }
-
-    fun search() {
-        scope.launch {
-            _apiState.emit(getBySearch.execute())
-        }
-    }
-
-    fun setFilter(options: FilterOptions) {
-        filterOptions = options
-        prefs.setFilter(options)
-        getByFilter()
-    }
-
-    fun getFilter() : FilterOptions {
-        filterOptions = prefs.getFilter()
-        return filterOptions
-    }
-
-    fun setLastSearch(search: String) {
-        prefs.setLastSearch(search)
-    }
-
-    fun showFilter() {
-        viewModelScope.launch {
-            _fState.emit(true)
-        }
-    }
-
-    fun hideFilter() {
-        viewModelScope.launch {
-            _fState.emit(false)
-        }
-    }
-
-    fun getFavorites() : List<StationModel> {
-        return favorite.getList()
-    }
-
-    fun getCurrentList() : List<StationModel> {
-        return current.get()
-    }
-
-    fun getFavoritesUuids() : List<String> {
-        val favorites = favorite.getList()
-        val list = mutableListOf<String>().apply {
-            favorites.forEach {
-                if (it.stationuuid != null) {
-                    add(it.stationuuid!!)
-                }
-            }
-        }.toList()
-        return list
-    }
-
-    fun addFavorite(station: StationModel) {
-        favorite.add(station)
-    }
-
-    fun delFavorite(uuid: String) {
-        favorite.delete(uuid)
-    }
-
-    private fun getByFilter() {
-        scope.launch {
-            _apiState.emit(getByFilter.execute())
         }
     }
 }

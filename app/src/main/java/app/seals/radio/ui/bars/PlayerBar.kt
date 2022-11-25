@@ -21,7 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.seals.radio.R
 import app.seals.radio.entities.responses.StationModel
-import app.seals.radio.intents.PlayerIntent
+import app.seals.radio.intents.MainIntent
 import app.seals.radio.states.PlayerState
 import app.seals.radio.ui.theme.Typography
 import coil.compose.AsyncImage
@@ -36,7 +36,7 @@ import com.google.accompanist.placeholder.shimmer
 @Preview
 fun PlayerBar(
     state: PlayerState = PlayerState.IsStopped(StationModel()),
-    onIntent: (intent: PlayerIntent) -> Unit = {},
+    onIntent: (intent: MainIntent) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
 
@@ -138,7 +138,7 @@ fun PlayerBar(
                     modifier = Modifier
                         .size(24.dp)
                         .clip(CircleShape)
-                        .clickable { onIntent(PlayerIntent.Previous) }
+                        .clickable { onIntent(MainIntent.Previous) }
                 )
                 Icon(
                     painter = painterResource(R.drawable.ic_skip_next),
@@ -146,7 +146,7 @@ fun PlayerBar(
                     modifier = Modifier
                         .size(24.dp)
                         .clip(CircleShape)
-                        .clickable { onIntent(PlayerIntent.Next) }
+                        .clickable { onIntent(MainIntent.Next) }
                 )
                 Icon(
                     painter = painterResource(
@@ -158,9 +158,9 @@ fun PlayerBar(
                         .clip(CircleShape)
                         .clickable {
                             if(isPlaying.value) {
-                                onIntent(PlayerIntent.Stop)
+                                onIntent(MainIntent.Stop)
                             } else {
-                                onIntent(PlayerIntent.Play)
+                                onIntent(MainIntent.Play)
                             }
                         }
                 )
