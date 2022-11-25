@@ -115,19 +115,19 @@ class MainActivityViewModel(
                 }
                 is MainIntent.SetFilter -> {
                     prefs.setFilter(intent.options)
-
                     scope.launch {
-                        _apiState.emit(getByFilter.execute())
-                    }.invokeOnCompletion {
-                        this.launch {
-                            _state.emit(UiState.Ready.Main(
-                                list = current.get(),
-                                filterOptions = prefs.getFilter(),
-                                filterIsShown = false
-                            ))
+                        if(
+                            intent.options.country == null
+                            && intent.options.tags == null
+                            && intent.options.language == null
+                        ) {
+                            _apiState.emit(getTop.execute())
+                        } else {
+                            _apiState.emit(getByFilter.execute())
                         }
                     }
                 }
+
                 is MainIntent.HideFilter -> _state.emit(UiState.Ready.Main(
                     list = current.get(),
                     favs = favorite.getList(),
@@ -139,6 +139,7 @@ class MainActivityViewModel(
                     filterOptions = prefs.getFilter(),
                     filterIsShown = true
                 ))
+
                 is MainIntent.ShowMain -> _state.emit(UiState.Ready.Main(
                     list = current.get(),
                     filterOptions = prefs.getFilter(),

@@ -5,7 +5,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -54,11 +53,12 @@ fun MainScreen(
     intent: (MainIntent) -> Unit = {}
 ) {
 
-    val pagerState = rememberPagerState(0)
     val tabs = listOf(
         "Search" to Icons.Default.Search,
         "Favorite" to Icons.Default.FavoriteBorder
     )
+
+    val pagerState = rememberPagerState(0)
     val scope = rememberCoroutineScope()
     val list = mutableListOf<StationModel>()
     val favs = mutableListOf<StationModel>()
@@ -156,6 +156,7 @@ fun MainScreen(
         }
 
     }
+
     if(state is UiState.Ready.Main) {
         Box(
             contentAlignment = Alignment.BottomCenter,
