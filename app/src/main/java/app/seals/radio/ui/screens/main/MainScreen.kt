@@ -3,6 +3,7 @@ package app.seals.radio.ui.screens.main
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -38,7 +39,10 @@ import app.seals.radio.main.MainActivityViewModel
 import coil.compose.AsyncImagePainter
 import coil.request.CachePolicy
 import coil.request.ImageRequest
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
 
+@OptIn(ExperimentalPagerApi::class, ExperimentalFoundationApi::class)
 @Composable
 @Preview
 fun MainScreen(
@@ -50,22 +54,48 @@ fun MainScreen(
 ) {
     val favoriteList : List<String> = vm?.getFavoritesUuids() ?: emptyList()
     val filterIsShown = vm?.filterState?.collectAsState()
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-    ) {
-        list.forEachIndexed { _, model ->
-            item {
-                StationItem(
-                    model = model,
-                    onClick = { vm!!.selectStation(it) },
-                    isFavorite = favoriteList.contains(model?.stationuuid ?: false),
-                    addFavorite = { vm?.addFavorite(it) },
-                    delFavorite = { vm?.delFavorite(it) }
-                )
+
+    HorizontalPager(count = 2) { page ->
+        when(page) {
+            0 -> {
+                LazyColumn(
+                    modifier = modifier
+                        .fillMaxSize()
+                ) {
+                    list.forEachIndexed { _, model ->
+                        item {
+                            StationItem(
+                                model = model,
+                                onClick = { vm!!.selectStation(it) },
+                                isFavorite = favoriteList.contains(model?.stationuuid ?: false),
+                                addFavorite = { vm?.addFavorite(it) },
+                                delFavorite = { vm?.delFavorite(it) }
+                            )
+                        }
+                    }
+                }
+            }
+            1 -> {
+                LazyColumn(
+                    modifier = modifier
+                        .fillMaxSize()
+                ) {
+                    vm!!.getFavorites().forEachIndexed { _, model ->
+                        item {
+                            StationItem(
+                                model = model,
+                                onClick = { vm.selectStation(it) },
+                                isFavorite = favoriteList.contains(model.stationuuid ?: false),
+                                addFavorite = { vm.addFavorite(it) },
+                                delFavorite = { vm.delFavorite(it) }
+                            )
+                        }
+                    }
+                }
             }
         }
     }
+
     Box(
         contentAlignment = Alignment.BottomCenter,
         modifier = modifier
@@ -86,7 +116,7 @@ fun MainScreen(
 }
 
 @Composable
-private fun StationItem(
+fun StationItem(
     model : StationModel? = null,
     onClick: (item: StationModel) -> Unit,
     isFavorite: Boolean = false,
@@ -221,8 +251,8 @@ private fun StationItem(
                         .size(24.dp)
                         .clip(CircleShape)
                         .clickable {
-                            if(isFavorite && model?.stationuuid != null) delFavorite(model.stationuuid!!)
-                            else if(model?.stationuuid != null) addFavorite(model)
+                            if (isFavorite && model?.stationuuid != null) delFavorite(model.stationuuid!!)
+                            else if (model?.stationuuid != null) addFavorite(model)
                             fav.value = !fav.value
                         }
                         .placeholder(
@@ -249,6 +279,5 @@ private fun StationItem(
             }
 
         }
-
     }
 }
