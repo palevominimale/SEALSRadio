@@ -53,18 +53,19 @@ fun MainScreen(
 
     val list = mutableListOf<StationModel>()
     val favs = mutableListOf<StationModel>()
+    var filterIsShown = false
 
     when(state) {
         is UiState.Ready.Empty -> list.addAll(emptyList())
         is UiState.Ready.Main -> {
             list.addAll(state.list)
             favs.addAll(state.favs)
+            filterIsShown = state.filterIsShown
         }
         is UiState.Ready.Favorites -> {
             favs.addAll(state.list)
         }
     }
-    val filterIsShown = (state as UiState.Ready.Main).filterIsShown
 
     HorizontalPager(count = 2) { page ->
         when(page) {
@@ -107,21 +108,23 @@ fun MainScreen(
         }
     }
 
-    Box(
-        contentAlignment = Alignment.BottomCenter,
-        modifier = modifier
-            .fillMaxSize()
-    ) {
-        AnimatedVisibility(
-            visible = filterIsShown,
-            enter = slideInVertically(initialOffsetY = {2*it}),
-            exit = slideOutVertically(targetOffsetY = {it}),
+    if(state is UiState.Ready.Main) {
+        Box(
+            contentAlignment = Alignment.BottomCenter,
+            modifier = modifier
+                .fillMaxSize()
         ) {
-            FilterPad(
-                hideFilter = { intent(MainIntent.HideFilter) },
-                setFilter = { intent(MainIntent.SetFilter(it)) },
-                filterOptions = state.filterOptions ?: FilterOptions()
-            )
+            AnimatedVisibility(
+                visible = filterIsShown,
+                enter = slideInVertically(initialOffsetY = {2*it}),
+                exit = slideOutVertically(targetOffsetY = {it}),
+            ) {
+                FilterPad(
+                    hideFilter = { intent(MainIntent.HideFilter) },
+                    setFilter = { intent(MainIntent.SetFilter(it)) },
+                    filterOptions = state.filterOptions ?: FilterOptions()
+                )
+            }
         }
     }
 }
