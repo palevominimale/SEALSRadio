@@ -63,11 +63,7 @@ class MainActivity : ComponentActivity() {
                             onIntent = { vm.intent(intent = it) }
                         ) },
                         bottomBar = { SearchBar(
-                            switchFilter = { if((uiState.value as UiState.Ready.Main).filterIsShown) {
-                                    vm.intent(MainIntent.HideFilter)
-                                } else {
-                                    vm.intent(MainIntent.ShowFilter)
-                                } },
+                            switchFilter = { vm.intent(MainIntent.SwitchFilter) },
                             searchUpdate = { vm.intent(MainIntent.Search(it)) }
                         ) },
                         content = {
@@ -76,7 +72,7 @@ class MainActivity : ComponentActivity() {
                                     MainScreen(
                                         state = uiState.value as UiState.Ready,
                                         modifier = Modifier.padding(it),
-                                        intent = {  intent -> vm.intent(intent) }
+                                        intent = { intent -> vm.intent(intent) }
                                     )
                                 }
                                 is UiState.Error -> {
@@ -86,17 +82,10 @@ class MainActivity : ComponentActivity() {
                                         message = state.message
                                     )
                                 }
-                                is UiState.Exception -> {
-                                    val state = uiState.value as UiState.Exception
-                                    ExceptionScreen(
-                                        t = state.e
-                                    )
-                                }
-                                is UiState.IsLoading -> {
-                                    MainScreen(
-                                        modifier = Modifier.padding(it)
-                                    )
-                                }
+                                is UiState.Exception -> ExceptionScreen(
+                                    (uiState.value as UiState.Exception).e
+                                )
+                                is UiState.IsLoading -> MainScreen(modifier = Modifier.padding(it))
                                 else -> {}
                             }
                         }

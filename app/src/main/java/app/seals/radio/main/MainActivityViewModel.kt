@@ -111,19 +111,24 @@ class MainActivityViewModel(
                         }
                     }
                 }
-
-                is MainIntent.HideFilter -> _state.emit(UiState.Ready.Main(
-                    list = current.get(),
-                    favs = favorite.getList(),
-                    filterOptions = prefs.getFilter(),
-                    filterIsShown = false
-                ))
-                is MainIntent.ShowFilter -> _state.emit(UiState.Ready.Main(
-                    list = current.get(),
-                    filterOptions = prefs.getFilter(),
-                    filterIsShown = true
-                ))
-
+                is MainIntent.SwitchFilter -> {
+                    if(_state.value is UiState.Ready.Main) {
+                        if((_state.value as UiState.Ready.Main).filterIsShown) {
+                            _state.emit(UiState.Ready.Main(
+                                list = current.get(),
+                                favs = favorite.getList(),
+                                filterOptions = prefs.getFilter(),
+                                filterIsShown = false
+                            ))
+                        } else {
+                            _state.emit(UiState.Ready.Main(
+                                list = current.get(),
+                                filterOptions = prefs.getFilter(),
+                                filterIsShown = true
+                            ))
+                        }
+                    }
+                }
                 is MainIntent.ShowMain -> _state.emit(UiState.Ready.Main(
                     list = current.get(),
                     filterOptions = prefs.getFilter(),

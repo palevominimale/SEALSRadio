@@ -4,8 +4,7 @@ import app.seals.radio.domain.models.FilterOptions
 import app.seals.radio.entities.responses.StationModel
 
 sealed interface MainIntent {
-    object ShowFilter : MainIntent
-    object HideFilter : MainIntent
+    object SwitchFilter : MainIntent
     object ShowMain : MainIntent
     object ShowFavorites : MainIntent
     object Stop : MainIntent
