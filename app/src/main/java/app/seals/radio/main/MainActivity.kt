@@ -60,36 +60,35 @@ class MainActivity : ComponentActivity() {
                     Scaffold(
                         topBar = { PlayerBar(
                             state = playerState.value,
-                            onIntent = { vm.intent(intent = it) }
-                        ) },
+                            onIntent = { vm.intent(intent = it) })
+                        },
                         bottomBar = { SearchBar(
                             switchFilter = { vm.intent(MainIntent.SwitchFilter) },
-                            searchUpdate = { vm.intent(MainIntent.Search(it)) }
-                        ) },
-                        content = {
-                            when(uiState.value) {
-                                is UiState.Ready -> {
-                                    MainScreen(
-                                        state = uiState.value as UiState.Ready,
-                                        modifier = Modifier.padding(it),
-                                        intent = { intent -> vm.intent(intent) }
-                                    )
-                                }
-                                is UiState.Error -> {
-                                    val state = uiState.value as UiState.Error
-                                    ExceptionScreen(
-                                        code = state.code,
-                                        message = state.message
-                                    )
-                                }
-                                is UiState.Exception -> ExceptionScreen(
-                                    (uiState.value as UiState.Exception).e
-                                )
-                                is UiState.IsLoading -> MainScreen(modifier = Modifier.padding(it))
-                                else -> {}
-                            }
+                            searchUpdate = { vm.intent(MainIntent.Search(it)) })
                         }
-                    )
+                    ) { pv ->
+                        when(uiState.value) {
+                            is UiState.Ready -> {
+                                MainScreen(
+                                    state = uiState.value as UiState.Ready,
+                                    modifier = Modifier.padding(pv),
+                                    intent = { intent -> vm.intent(intent) }
+                                )
+                            }
+                            is UiState.Error -> {
+                                val state = uiState.value as UiState.Error
+                                ExceptionScreen(
+                                    code = state.code,
+                                    message = state.message
+                                )
+                            }
+                            is UiState.Exception -> ExceptionScreen(
+                                (uiState.value as UiState.Exception).e
+                            )
+                            is UiState.IsLoading -> MainScreen(modifier = Modifier.padding(pv))
+                            else -> {}
+                        }
+                    }
                 }
             }
         }

@@ -1,9 +1,7 @@
 package app.seals.radio.data.repos
 
 import app.seals.radio.data.api.NetworkRequest
-import app.seals.radio.domain.interfaces.FilterControls
 import app.seals.radio.domain.interfaces.RemoteRepo
-import app.seals.radio.domain.models.FilterOptions
 import app.seals.radio.entities.api.ApiResult
 
 class RemoteRepoImpl(

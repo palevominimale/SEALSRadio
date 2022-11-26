@@ -10,6 +10,7 @@ import app.seals.radio.domain.usecases.api_ops.GetListWithFilterUseCase
 import app.seals.radio.domain.usecases.api_ops.GetTopListUseCase
 import app.seals.radio.domain.usecases.local_storage.CurrentListUseCase
 import app.seals.radio.domain.usecases.local_storage.FavoriteListUseCase
+import app.seals.radio.domain.usecases.prefs.PreferencesInteractionsUseCase
 import app.seals.radio.entities.api.ApiResult
 import app.seals.radio.entities.responses.StationModel
 import app.seals.radio.intents.MainIntent
@@ -28,9 +29,9 @@ class MainActivityViewModel(
     private val getTop: GetTopListUseCase,
     private val getByFilter: GetListWithFilterUseCase,
     private val getBySearch: GetListBySearchUseCase,
-    private val prefs: SharedPrefsManager,
     private val current: CurrentListUseCase,
-    private val favorite: FavoriteListUseCase
+    private val favorite: FavoriteListUseCase,
+    private val prefs: PreferencesInteractionsUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<UiState>(UiState.Splash)

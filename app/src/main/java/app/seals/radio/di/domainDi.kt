@@ -3,10 +3,9 @@ package app.seals.radio.di
 import app.seals.radio.domain.usecases.api_ops.GetListBySearchUseCase
 import app.seals.radio.domain.usecases.api_ops.GetListWithFilterUseCase
 import app.seals.radio.domain.usecases.api_ops.GetTopListUseCase
-import app.seals.radio.domain.usecases.filter.SetFilterUseCase
-import app.seals.radio.domain.usecases.filter.UnsetFilterUseCase
 import app.seals.radio.domain.usecases.local_storage.CurrentListUseCase
 import app.seals.radio.domain.usecases.local_storage.FavoriteListUseCase
+import app.seals.radio.domain.usecases.prefs.PreferencesInteractionsUseCase
 import org.koin.dsl.module
 
 val domainDi = module {
@@ -18,18 +17,6 @@ val domainDi = module {
     single {
         GetListWithFilterUseCase(
             repo = get()
-        )
-    }
-
-    single {
-        SetFilterUseCase(
-            filterControls = get()
-        )
-    }
-
-    single {
-        UnsetFilterUseCase(
-            filterControls = get()
         )
     }
 
@@ -48,6 +35,12 @@ val domainDi = module {
     single {
         CurrentListUseCase(
             repo = get()
+        )
+    }
+
+    single {
+        PreferencesInteractionsUseCase(
+            prefs = get()
         )
     }
 }
