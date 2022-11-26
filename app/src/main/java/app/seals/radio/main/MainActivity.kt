@@ -13,10 +13,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.lifecycleScope
 import app.seals.radio.intents.MainIntent
 import app.seals.radio.player.BackgroundPlayerService
-import app.seals.radio.states.PlayerState
 import app.seals.radio.states.UiState
 import app.seals.radio.ui.bars.PlayerBar
 import app.seals.radio.ui.bars.SearchBar
@@ -24,16 +22,12 @@ import app.seals.radio.ui.screens.ExceptionScreen
 import app.seals.radio.ui.screens.main.MainScreen
 import app.seals.radio.ui.screens.SplashScreen
 import app.seals.radio.ui.theme.SEALSRadioTheme
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
 
     private val vm by viewModel<MainActivityViewModel>()
-    private var backgroundPlayerServiceState: StateFlow<Boolean>? = null
-
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is BackgroundPlayerService.BackgroundServiceBinder){

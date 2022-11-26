@@ -1,12 +1,10 @@
 package app.seals.radio.main
 
 import android.annotation.SuppressLint
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.seals.radio.data.preferences.SharedPrefsManager
-import app.seals.radio.domain.models.FilterOptions
 import app.seals.radio.domain.usecases.api_ops.GetListBySearchUseCase
 import app.seals.radio.domain.usecases.api_ops.GetListWithFilterUseCase
 import app.seals.radio.domain.usecases.api_ops.GetTopListUseCase
@@ -25,8 +23,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-private const val TAG = "MAVM_"
-
 @Suppress("UNCHECKED_CAST")
 class MainActivityViewModel(
     private val getTop: GetTopListUseCase,
@@ -43,50 +39,39 @@ class MainActivityViewModel(
     private val _currentStation = mutableStateOf(StationModel())
     val uiState get() = _state as StateFlow<UiState>
     val playerState get() = _pState as StateFlow<PlayerState>
-    private var filterOptions = FilterOptions()
     private val scope = CoroutineScope(Dispatchers.IO)
     @SuppressLint("StaticFieldLeak")
     private var playerService : BackgroundPlayerService? = null
 
     init {
-        filterOptions = prefs.getFilter()
         viewModelScope.launch {
             _apiState.collectLatest {
                 when(it) {
-                    is ApiResult.ApiError -> {
-                        _state.emit(UiState.Error(it.code, it.message))
-                    }
-                    is ApiResult.ApiException -> {
-                        _state.emit(UiState.Exception(it.e))
-                    }
+                    is ApiResult.ApiError -> _state.emit(UiState.Error(it.code, it.message))
+                    is ApiResult.ApiException -> _state.emit(UiState.Exception(it.e))
                     is ApiResult.ApiSuccess -> {
-                        if(it.data.isNotEmpty()) {
-                            when(it.data[0]) {
-                                is StationModel -> {
-                                    current.clear()
-                                    current.set(it.data as List<StationModel>)
-                                    if(_currentStation.value.url == null) {
-                                        if(_pState.value is PlayerState.IsStopped) {
-                                            _pState.emit(PlayerState.IsStopped(it.data[0] as StationModel))
-                                        } else {
-                                            _pState.emit(PlayerState.IsPlaying(it.data[0] as StationModel))
-                                        }
-                                        _currentStation.value = it.data[0] as StationModel
+                        if(it.data.isNotEmpty()) when(it.data[0]) {
+                            is StationModel -> {
+                                current.clear()
+                                current.set(it.data as List<StationModel>)
+                                if(_currentStation.value.url == null) {
+                                    if(_pState.value is PlayerState.IsStopped) {
+                                        _pState.emit(PlayerState.IsStopped(it.data[0] as StationModel))
+                                    } else {
+                                        _pState.emit(PlayerState.IsPlaying(it.data[0] as StationModel))
                                     }
-                                    _state.emit(UiState.Ready.Main(
-                                        list = it.data as List<StationModel>,
-                                        favs = favorite.getList(),
-                                        filterIsShown = false,
-                                        filterOptions = prefs.getFilter()
-                                    ))
+                                    _currentStation.value = it.data[0] as StationModel
                                 }
-                                else -> {
-                                    _state.emit(UiState.Ready.Empty)
-                                }
+                                _state.emit(UiState.Ready.Main(
+                                    list = it.data as List<StationModel>,
+                                    favs = favorite.getList(),
+                                    filterIsShown = false,
+                                    filterOptions = prefs.getFilter()
+                                ))
                             }
-                        } else {
-                            _state.emit(UiState.Ready.Empty)
+                            else -> _state.emit(UiState.Ready.Empty)
                         }
+                        else _state.emit(UiState.Ready.Empty)
                     }
                 }
             }
