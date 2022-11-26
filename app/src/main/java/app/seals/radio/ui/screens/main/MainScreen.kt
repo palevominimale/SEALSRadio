@@ -169,7 +169,7 @@ fun MainScreen(
                 exit = slideOutVertically(targetOffsetY = {it}),
             ) {
                 FilterPad(
-                    hideFilter = { intent(MainIntent.HideFilter) },
+                    hideFilter = { intent(MainIntent.SwitchFilter) },
                     setFilter = { intent(MainIntent.SetFilter(it)) },
                     filterOptions = state.filterOptions ?: FilterOptions()
                 )

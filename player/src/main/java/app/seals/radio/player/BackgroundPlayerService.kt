@@ -6,26 +6,23 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.view.ContentInfoCompat
+import androidx.core.graphics.drawable.toBitmap
 import app.seals.radio.entities.responses.StationModel
+import coil.ImageLoader
+import coil.request.ImageRequest
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
-import com.google.android.exoplayer2.util.FlagSet
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.launch
 
 class BackgroundPlayerService : Service() {
 
@@ -94,6 +91,7 @@ class BackgroundPlayerService : Service() {
                     return "a subtitle"
                 }
                 override fun getCurrentLargeIcon(player: Player, callback: PlayerNotificationManager.BitmapCallback): Bitmap? {
+                    loadBitmap(station.favicon, callback)
                     return null
                 }
             })
@@ -122,9 +120,25 @@ class BackgroundPlayerService : Service() {
             setBadgeIconType(Notification.BADGE_ICON_NONE)
             setPlayer(exoPlayer)
             setUseNextAction(true)
+            setUsePreviousAction(true)
             setUsePlayPauseActions(true)
-//            setUseStopAction(true)
+            setUseStopAction(true)
             setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+        }
+    }
+
+    private fun loadBitmap(
+        url: String?,
+        callback: PlayerNotificationManager.BitmapCallback
+    ) {
+        if (url != null) {
+            val request = ImageRequest.Builder(context)
+                .data(url)
+                .build()
+            CoroutineScope(Dispatchers.IO).launch {
+                val bitmap = BitmapFactory.decodeResource(resources,R.drawable.ic_radio)
+                callback.onBitmap(ImageLoader(context).execute(request).drawable?.toBitmap() ?: bitmap)
+            }
         }
     }
 
@@ -135,8 +149,6 @@ class BackgroundPlayerService : Service() {
     fun pause() {
         exoPlayer?.pause()
     }
-
-    fun getPlayingMediaID() = station.stationuuid
 
     private fun releasePlayer(){
         playerNotificationManager.setPlayer(null)
@@ -175,7 +187,6 @@ class BackgroundPlayerService : Service() {
 
     inner class BackgroundServiceBinder: Binder() {
         fun getService() =this@BackgroundPlayerService
-        fun getPlayingMediaID() = station.stationuuid
     }
 
 }
