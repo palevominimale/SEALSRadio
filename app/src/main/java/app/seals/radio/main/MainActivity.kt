@@ -32,22 +32,16 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class MainActivity : ComponentActivity() {
 
     private val vm by viewModel<MainActivityViewModel>()
-    private var backgroundPlayService: BackgroundPlayerService? = null
     private var backgroundPlayerServiceState: StateFlow<Boolean>? = null
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is BackgroundPlayerService.BackgroundServiceBinder){
-                if (service.getPlayingMediaID() != vm.playerState.value.station.stationuuid){
-                    backgroundPlayService = service.getService()
-                    backgroundPlayService?.updatePlayer(vm.playerState.value.station)
-                }
-                backgroundPlayService = service.getService()
-                backgroundPlayerServiceState = backgroundPlayService!!.isPlayingStateFlow
+                vm.setPlayer(service.getService())
             }
         }
         override fun onServiceDisconnected(name: ComponentName?) {
-            backgroundPlayService?.stopSelf()
+            vm.unsetPlayer()
             unbindService(this)
         }
     }
@@ -66,53 +60,21 @@ class MainActivity : ComponentActivity() {
             )
 
             SEALSRadioTheme {
-                if(backgroundPlayService != null) {
-                    when(playerState.value) {
-                        is PlayerState.IsPlaying -> {
-                            if(backgroundPlayService!!.getPlayingMediaID() == vm.playerState.value.station.stationuuid) {
-                                backgroundPlayService!!.play()
-                            } else {
-                                backgroundPlayService!!.updatePlayer(vm.playerState.value.station)
-                                backgroundPlayService!!.play()
-                            }
-                        }
-                        is PlayerState.IsStopped -> {
-                            if(backgroundPlayService!!.getPlayingMediaID() == vm.playerState.value.station.stationuuid) {
-                                backgroundPlayService!!.pause()
-                            } else {
-                                backgroundPlayService!!.updatePlayer(vm.playerState.value.station)
-                                backgroundPlayService!!.pause()
-                            }
-                        }
-                    }
-                    lifecycleScope.launch {
-                        backgroundPlayerServiceState?.collect {
-                            if(it) vm.play() else vm.pause()
-                        }
-                    }
-                }
-
                 if(uiState.value is UiState.Splash) {
                     SplashScreen()
                 } else {
                     Scaffold(
                         topBar = { PlayerBar(
                             state = playerState.value,
-                            onIntent = { vm.intent(
-                                intent = it,
-                                backgroundPlayerServiceState = backgroundPlayerServiceState?.value ?: false) }
+                            onIntent = { vm.intent(intent = it) }
                         ) },
                         bottomBar = { SearchBar(
-                            switchFilter = {
-                                if((uiState.value as UiState.Ready.Main).filterIsShown) {
-                                    vm.intent(MainIntent.HideFilter, backgroundPlayerServiceState!!.value)
+                            switchFilter = { if((uiState.value as UiState.Ready.Main).filterIsShown) {
+                                    vm.intent(MainIntent.HideFilter)
                                 } else {
-                                    vm.intent(MainIntent.ShowFilter, backgroundPlayerServiceState!!.value)
-                                }
-                               },
-                            searchUpdate = {
-                                vm.intent(MainIntent.Search(it), backgroundPlayerServiceState!!.value)
-                            }
+                                    vm.intent(MainIntent.ShowFilter)
+                                } },
+                            searchUpdate = { vm.intent(MainIntent.Search(it)) }
                         ) },
                         content = {
                             when(uiState.value) {
@@ -120,9 +82,7 @@ class MainActivity : ComponentActivity() {
                                     MainScreen(
                                         state = uiState.value as UiState.Ready,
                                         modifier = Modifier.padding(it),
-                                        intent = {  intent ->
-                                            vm.intent(intent, backgroundPlayerServiceState!!.value)
-                                        }
+                                        intent = {  intent -> vm.intent(intent) }
                                     )
                                 }
                                 is UiState.Error -> {

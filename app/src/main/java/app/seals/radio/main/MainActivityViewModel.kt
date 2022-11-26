@@ -1,5 +1,7 @@
 package app.seals.radio.main
 
+import android.annotation.SuppressLint
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,6 +15,7 @@ import app.seals.radio.domain.usecases.local_storage.FavoriteListUseCase
 import app.seals.radio.entities.api.ApiResult
 import app.seals.radio.entities.responses.StationModel
 import app.seals.radio.intents.MainIntent
+import app.seals.radio.player.BackgroundPlayerService
 import app.seals.radio.states.PlayerState
 import app.seals.radio.states.UiState
 import kotlinx.coroutines.CoroutineScope
@@ -42,6 +45,8 @@ class MainActivityViewModel(
     val playerState get() = _pState as StateFlow<PlayerState>
     private var filterOptions = FilterOptions()
     private val scope = CoroutineScope(Dispatchers.IO)
+    @SuppressLint("StaticFieldLeak")
+    private var playerService : BackgroundPlayerService? = null
 
     init {
         filterOptions = prefs.getFilter()
@@ -88,22 +93,16 @@ class MainActivityViewModel(
         }
     }
 
-    fun intent(intent: MainIntent, backgroundPlayerServiceState: Boolean) {
+    fun intent(intent: MainIntent) {
         viewModelScope.launch {
             when(intent) {
                 is MainIntent.Play -> {
-                    if(!backgroundPlayerServiceState) {
-                        viewModelScope.launch {
-                            _pState.emit(PlayerState.IsPlaying(_currentStation.value))
-                        }
-                    }
+                    _pState.emit(PlayerState.IsPlaying(_currentStation.value))
+                    playerService?.play()
                 }
                 is MainIntent.Stop -> {
-                    if(backgroundPlayerServiceState) {
-                        viewModelScope.launch {
-                            _pState.emit(PlayerState.IsStopped(_currentStation.value))
-                        }
-                    }
+                    _pState.emit(PlayerState.IsStopped(_currentStation.value))
+                    playerService?.pause()
                 }
                 is MainIntent.Next -> {}
                 is MainIntent.Previous -> {}
@@ -177,6 +176,7 @@ class MainActivityViewModel(
 
     private fun selectStation(station: StationModel) {
         _currentStation.value = station
+        playerService?.updatePlayer(station)
         viewModelScope.launch {
             when(_pState.value) {
                 is PlayerState.IsStopped -> {
@@ -184,20 +184,25 @@ class MainActivityViewModel(
                 }
                 is PlayerState.IsPlaying -> {
                     _pState.emit(PlayerState.IsPlaying(_currentStation.value))
+                    playerService?.play()
                 }
             }
         }
     }
 
-    fun play() {
+    fun setPlayer(playerService: BackgroundPlayerService) {
+        this.playerService = playerService
+        playerService.updatePlayer(_currentStation.value)
         viewModelScope.launch {
-            _pState.emit(PlayerState.IsPlaying(_currentStation.value))
+            playerService.isPlayingStateFlow.collect {
+                if(it) _pState.emit(PlayerState.IsPlaying(_currentStation.value))
+                else _pState.emit(PlayerState.IsStopped(_currentStation.value))
+            }
         }
     }
 
-    fun pause() {
-        viewModelScope.launch {
-            _pState.emit(PlayerState.IsStopped(_currentStation.value))
-        }
+    fun unsetPlayer() {
+        playerService?.stopSelf()
+        this.playerService = null
     }
 }
